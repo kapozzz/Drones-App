@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "705064677460",
+    "project_id": "dronesapp-a5e11",
+    "storage_bucket": "dronesapp-a5e11.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:705064677460:android:23b66489e42ef064da3dc1",
+        "android_client_info": {
+          "package_name": "com.example.vozdux"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvb9iLX3FX5Ff5tBKqsfwhdUr1Av-Ms90"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
