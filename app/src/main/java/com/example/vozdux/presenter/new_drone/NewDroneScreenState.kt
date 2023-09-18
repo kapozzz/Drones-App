@@ -1,16 +1,21 @@
 package com.example.vozdux.presenter.new_drone
 
-import com.example.vozdux.domain.model.Drone
-
-data class NewDroneScreenState(
-    val currentDrone: Drone = Drone(
-        name = "",
-        shortDescription = "",
-        longDescription = emptyList(),
-        properties = emptyList(),
-        creationDate = "",
-        country = "",
-        cost = ""
+data class BottomSheetStateHolder(
+    var bottomSheetIsVisible: BottomSheetState = BottomSheetState.BottomSheetIsClosed,
+    val bottomSheetContentState: BottomSheetContentState = BottomSheetContentState(
+        propertyField = "",
+        descriptionField = ""
     )
 )
+
+data class BottomSheetContentState(
+    var propertyField: String,
+    var descriptionField: String
+)
+
+sealed class BottomSheetState {
+    object NewDescriptionHeadline : BottomSheetState()
+    object NewProperty : BottomSheetState()
+    object BottomSheetIsClosed : BottomSheetState()
+}
 

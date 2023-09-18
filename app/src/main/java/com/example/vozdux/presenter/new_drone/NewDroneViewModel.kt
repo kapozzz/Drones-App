@@ -3,76 +3,148 @@ package com.example.vozdux.presenter.new_drone
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
 import androidx.lifecycle.ViewModel
+import com.example.vozdux.constants.emptyDrone
 import com.example.vozdux.domain.Repository
+import com.example.vozdux.domain.model.CompositeDroneElement
 import com.example.vozdux.domain.model.Drone
-import dagger.Component.Factory
 import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 class NewDroneViewModel @AssistedInject constructor(
     private val repository: Repository,
-    @Assisted(value = "drone") private val currentDrone: Drone?
+    @Assisted(value = "droneId") private val droneId: String
 ) : ViewModel() {
 
-    @Factory
+    @AssistedFactory
     interface NewDroneViewModelFactory {
-        fun create()
+        fun create(@Assisted(value = "droneId") droneId: String): NewDroneViewModel
     }
 
-    private val _state: MutableState<NewDroneScreenState> = mutableStateOf(NewDroneScreenState())
-    val state: State<NewDroneScreenState> = _state
+//    private val _state: MutableState<NewDroneScreenState> = mutableStateOf(NewDroneScreenState())
+//    val state: State<NewDroneScreenState> = _state
+
+    private val _currentDrone: MutableState<Drone> = mutableStateOf(emptyDrone)
+    val currentDrone: State<Drone> = _currentDrone
+
+    private val _bottomSheetState: MutableState<BottomSheetStateHolder> = mutableStateOf(
+        BottomSheetStateHolder()
+    )
+    val bottomSheetState: State<BottomSheetStateHolder> = _bottomSheetState
 
     init {
-        if (currentDrone != null) {
-            _state.value =  _state.value.copy(
-                currentDrone = currentDrone
-            )
+        if (droneId != "-1") {
+//            _state.value = _state.value.copy(
+//                 ебать бля получаем дрон ёпта
+//            )
         }
     }
 
-    fun nameChanged(newName: String) {
-        val tempCurrentDrone = _state.value.currentDrone.copy(
-            name = newName
-        )
-        _state.value =  _state.value.copy(
-            currentDrone = tempCurrentDrone
-        )
-    }
+    fun onEvent(event: NewDroneScreenEvent) {
+        when (event) {
+            is NewDroneScreenEvent.NameChanged -> {
+                _currentDrone.value = _currentDrone.value.copy(
+                    name = event.newName
+                )
+            }
 
-    fun shortDescriptionChanged(shortDescription: String) {
-        val tempCurrentDrone = _state.value.currentDrone.copy(
-            shortDescription = shortDescription
-        )
-        _state.value = _state.value.copy(
-            currentDrone = tempCurrentDrone
-        )
-    }
+            is NewDroneScreenEvent.ShortDescriptionChanged -> {
+                _currentDrone.value = _currentDrone.value.copy(
+                    shortDescription = event.newShortDescription
+                )
+            }
 
-    fun creationDateChanged(newCreationDate: String) {
-        val tempCurrentDrone = _state.value.currentDrone.copy(
-            creationDate = newCreationDate
-        )
-        _state.value =  _state.value.copy(
-            currentDrone = tempCurrentDrone
-        )
-    }
+            is NewDroneScreenEvent.CreationDateChanged -> {
+                _currentDrone.value = _currentDrone.value.copy(
+                    creationDate = event.newCreationDate
+                )
+            }
 
-    fun costChanged(newCost: String) {
-        val tempCurrentDrone = _state.value.currentDrone.copy(
-            cost = newCost
-        )
-        _state.value =  _state.value.copy(
-            currentDrone = tempCurrentDrone
-        )
-    }
+            is NewDroneScreenEvent.CostChanged -> {
+                _currentDrone.value = _currentDrone.value.copy(
+                    cost = event.newCost
+                )
+            }
 
-    fun longDescriptionChanged(longDescription: String) {
+            is NewDroneScreenEvent.LongDescriptionElementChanged -> {
+                val temp = _currentDrone.value.longDescription.map {
+                    if (it.name == event.changedElement.name) CompositeDroneElement(event.changedElement.name, event.changedElement.value)
+                    else it
+                }
+                _currentDrone.value = _currentDrone.value.copy(
+                    longDescription =  temp.toMutableList()
+                )
+            }
 
-    }
+            is NewDroneScreenEvent.PropertiesElementChanged -> {
+                val temp = _currentDrone.value.properties.map {
+                    if (it.name == event.changedElement.name) CompositeDroneElement(event.changedElement.name, event.changedElement.value)
+                    else it
+                }
+                _currentDrone.value = _currentDrone.value.copy(
+                    properties =  temp.toMutableList()
+                )
+            }
 
-    fun propertiesChanged() {
+            is NewDroneScreenEvent.PropertyDelete -> {
 
+            }
+
+            is NewDroneScreenEvent.PropertyNew -> {
+                // надо мапа пробовать это хуйня какая-то
+                _currentDrone.value.properties.add(
+                    CompositeDroneElement(
+                        name = _bottomSheetState.value.bottomSheetContentState.propertyField,
+                        value = ""
+                    )
+                )
+                _bottomSheetState.value.bottomSheetContentState.propertyField = ""
+                _bottomSheetState.value = _bottomSheetState.value.copy(
+                    bottomSheetIsVisible = BottomSheetState.BottomSheetIsClosed
+                )
+            }
+
+            is NewDroneScreenEvent.DescriptionHeadlineDelete -> {
+
+            }
+
+            is NewDroneScreenEvent.DescriptionHeadlineNew -> {
+                _currentDrone.value.longDescription.add(
+                    CompositeDroneElement(
+                        name = _bottomSheetState.value.bottomSheetContentState.descriptionField,
+                        value = ""
+                    )
+                )
+                _bottomSheetState.value.bottomSheetContentState.descriptionField = ""
+                _bottomSheetState.value = _bottomSheetState.value.copy(
+                    bottomSheetIsVisible = BottomSheetState.BottomSheetIsClosed
+                )
+            }
+
+            is NewDroneScreenEvent.BottomSheetPropertyChanged -> {
+                _bottomSheetState.value = _bottomSheetState.value.copy(
+                    bottomSheetContentState = _bottomSheetState.value.bottomSheetContentState.copy(
+                        propertyField = event.text
+                    )
+                )
+            }
+
+            is NewDroneScreenEvent.BottomSheetDescriptionChanged -> {
+                _bottomSheetState.value = _bottomSheetState.value.copy(
+                    bottomSheetContentState = _bottomSheetState.value.bottomSheetContentState.copy(
+                        descriptionField = event.text
+                    )
+                )
+            }
+
+            is NewDroneScreenEvent.BottomSheetStateChanged -> {
+                _bottomSheetState.value = _bottomSheetState.value.copy(
+                    bottomSheetIsVisible = event.state
+                )
+            }
+        }
     }
 
     fun insertDrone() {

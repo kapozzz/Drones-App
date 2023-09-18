@@ -11,15 +11,9 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Named
 
-@Module
-class FirebaseModule {
+@Module(includes = [RepositoryBindModule::class])
+ class FirebaseModule {
 
-    @Provides
-    @Named("dronesDB")
-    fun provideFirebaseInstance(): DatabaseReference {
-        val dbName = FirebaseStorages.DRONES
-        return FirebaseDatabase.getInstance().getReference(dbName)
-    }
 }
 
 @Module

@@ -1,38 +1,38 @@
 package com.example.vozdux.presenter.new_drone.components
 
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.TextField
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.example.vozdux.domain.model.CompositeDroneElement
 
 @Composable
 fun CompositeElement(
-    onElementChanged: (List<Map<String, String>>) -> Unit,
+    element: CompositeDroneElement,
+    onElementChanged: (CompositeDroneElement) -> Unit,
     modifier: Modifier = Modifier,
-    elements: List<Map<String, String>> = emptyList()
 ) {
 
-    val localElementsState = remember {
-        mutableStateOf(elements)
-    }
+    Box(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        
+        Column {
+            Text(
+                text = element.name + ":"
+            )
 
-    LazyColumn {
-
-        items(localElementsState.value) { element ->
-
-            var key: String
-            var value: String
-
-            element.forEach { (_key, _value) ->
-
-            }
-
-            TextField(value = element, onValueChange = {
-
-            })
+            TextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = element.value, onValueChange = { newValue ->
+                    val updatedElement = element.copy(
+                        value = newValue
+                    )
+                    onElementChanged.invoke(updatedElement)
+                })
         }
     }
 }
