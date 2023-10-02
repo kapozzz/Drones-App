@@ -1,43 +1,62 @@
 package com.example.vozdux.data
 
+import android.util.Log
 import com.example.vozdux.constants.emptyDrone
-import com.example.vozdux.data.util.FirebaseStorages
-import com.example.vozdux.domain.model.Drone
+import com.example.vozdux.data.util.FirebaseHelper
+import com.example.vozdux.data.util.FirebaseDefault
 import com.example.vozdux.domain.Repository
+import com.example.vozdux.domain.model.Drone
+import com.example.vozdux.domain.model.UploadDroneImage
+import com.example.vozdux.domain.model.UploadDroneImageResult
+import com.example.vozdux.domain.model.UploadDroneResult
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class RepositoryImpl @Inject constructor(): Repository {
-
-    val dbName = FirebaseStorages.DRONES
-    private val database: DatabaseReference =  FirebaseDatabase.getInstance().getReference(dbName)
+class RepositoryImpl @Inject constructor(
+    private val dronesHelper: FirebaseHelper
+) : Repository {
 
     override suspend fun getDrones(): Flow<List<Drone>> {
         return flow {
             emit(listOf(emptyDrone))
         }
+        // not working
     }
 
     override suspend fun getDroneById(droneId: String): Drone {
         return emptyDrone
+        // not working
     }
 
-    override suspend fun insertDrone(drone: Drone): Boolean {
-        var result = false
-        var _drone = drone
-        if (_drone.id == null) {
-            val newId = database.push().key!!
-            _drone = drone.copy(
-                id = newId
-            )
-        }
-        database.child(_drone.id!!).setValue(drone)
+    override suspend fun insertDrone(drone: Drone): UploadDroneResult {
+        val database: DatabaseReference = dronesHelper.database
+        var result: UploadDroneResult
+        val tempDrone = drone.copy(
+            id = if (drone.id.isNullOrEmpty()) dronesHelper.getNewKey() else drone.id
+        )
+        database.child(tempDrone.id!!).setValue(tempDrone)
             .addOnCompleteListener {
-                result = true
+                result = UploadDroneResult(true, tempDrone.id)
             }
-        return result
+            .addOnCanceledListener {
+                result = UploadDroneResult()
+            }
+            .addOnFailureListener {
+                result = UploadDroneResult()
+            }.addOnSuccessListener {
+                result = UploadDroneResult(true, tempDrone.id)
+            }
+        return UploadDroneResult(true, tempDrone.id)
+    }
+
+    override suspend fun insertDroneImage(image: UploadDroneImage): UploadDroneImageResult {
+        val path = dronesHelper.storage
+            .child(
+                image.id
+            )
+        path.putFile(image.uri)
+        return UploadDroneImageResult()
     }
 }

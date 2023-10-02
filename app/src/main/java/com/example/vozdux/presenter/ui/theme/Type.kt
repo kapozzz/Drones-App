@@ -37,7 +37,7 @@ val Typography = Typography(
         letterSpacing = 0.5.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = FontFamily.Monospace,
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 26.sp,
         lineHeight = 28.sp,

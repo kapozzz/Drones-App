@@ -1,18 +1,29 @@
 package com.example.vozdux.di
 
 import com.example.vozdux.data.RepositoryImpl
-import com.example.vozdux.data.util.FirebaseStorages
+import com.example.vozdux.data.util.FirebaseDefault
+import com.example.vozdux.data.util.FirebaseHelper
 import com.example.vozdux.domain.Repository
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import dagger.Binds
-import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
-import javax.inject.Named
 
 @Module(includes = [RepositoryBindModule::class])
  class FirebaseModule {
+
+     @Provides
+     fun provideDroneHelper(): FirebaseHelper {
+         return FirebaseHelper(
+             database = FirebaseDatabase.getInstance().getReference(
+                 FirebaseDefault.DRONES
+             ),
+             storage = FirebaseStorage.getInstance().getReference(FirebaseDefault.DRONES_IMAGES_TABLE_NAME)
+         )
+     }
 
 }
 

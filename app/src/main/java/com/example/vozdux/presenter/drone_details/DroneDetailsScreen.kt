@@ -18,13 +18,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vozdux.data.RepositoryImpl
 
-@Preview
-@Composable
-fun Preview() {
-    DroneDetailsScreen(
-        viewModel = DroneDetailsScreenViewModel(repository = RepositoryImpl(), droneId = "adajlk")
-    )
-}
+//@Preview
+//@Composable
+//fun Preview() {
+//    DroneDetailsScreen(
+//        viewModel = DroneDetailsScreenViewModel(repository = RepositoryImpl(), droneId = "adajlk")
+//    )
+//}
 
 @Composable
 fun DroneDetailsScreen(
