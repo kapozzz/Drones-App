@@ -38,14 +38,16 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.NewDroneScreen.route
+                        startDestination = Screen.DronesScreen.route
                     ) {
+
                         composable(route = Screen.DronesScreen.route) {
                             DronesList(
                                 viewModel = dronesListViewModel,
                                 navController = navController
                             )
                         }
+
                         composable(
                             route = "${Screen.NewDroneScreen.route}?drone={drone}",
                             arguments = listOf(
@@ -55,11 +57,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         ) {
-                            val droneId = it.arguments?.getString("droneId") ?: "-1"
+
+                            val droneId = it.arguments?.getString("drone") ?: "-1"
                             val newDroneViewModel = newDroneViewModelFactory.create(droneId)
-                            NewDrone(
-                                newDroneViewModel
-                            )
+                            NewDrone( newDroneViewModel )
                         }
                     }
                 }

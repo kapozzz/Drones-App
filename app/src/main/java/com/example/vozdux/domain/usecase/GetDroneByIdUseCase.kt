@@ -3,13 +3,13 @@ package com.example.vozdux.domain.usecase
 import com.example.vozdux.domain.Repository
 import com.example.vozdux.domain.model.drone.Drone
 import com.example.vozdux.domain.model.drone.DroneWithImages
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetDronesUseCase @Inject constructor(
+class GetDroneByIdUseCase @Inject constructor(
     private val repository: Repository
 ) {
-    suspend operator fun invoke(): Flow<List<DroneWithImages>> {
-        return repository.getDrones()
+
+    suspend operator fun invoke(droneId: String): DroneWithImages? {
+        return repository.getDroneById(droneId)
     }
 }

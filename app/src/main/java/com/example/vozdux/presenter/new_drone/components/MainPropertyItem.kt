@@ -22,15 +22,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.vozdux.domain.model.drone.CompositeDroneElement
+import com.example.vozdux.domain.model.drone.PropertyElement
 
 @Composable
-fun NewDroneItem(
-    currentItem: CompositeDroneElement,
+fun MainPropertyItem(
+    currentItem: PropertyElement,
     currentExpandedElement: String,
     onExpandClick: () -> Unit,
     onCollapseClick: () -> Unit,
-    editItem: (currentItem: CompositeDroneElement) -> Unit,
+    editItem: (currentItem: PropertyElement) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -65,7 +65,6 @@ fun NewDroneItem(
                         color = MaterialTheme.colorScheme.onBackground
                     )
 
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -97,7 +96,7 @@ fun NewDroneItem(
             }
 
             if (isVisible) {
-                Text(modifier = Modifier.padding(16.dp), text = currentItem.value)
+                Text(modifier = Modifier.padding(16.dp), text = currentItem.value.toString())
             }
         }
     }

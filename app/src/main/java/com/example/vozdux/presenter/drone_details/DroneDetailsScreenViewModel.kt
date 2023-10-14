@@ -28,18 +28,18 @@ class DroneDetailsScreenViewModel @AssistedInject constructor(
 
     val state: MutableState<DroneDetailsState> = _state
 
-    init {
-        getDroneById()
-    }
+//    init {
+//        getDroneById()
+//    }
 
-    private fun getDroneById() {
-        viewModelScope.launch {
-            try {
-                val drone = repository.getDroneById(droneId)
-                _state.value = _state.value.copy(drone = drone)
-            } catch (e: Exception) {
-                Log.e("Error", e.message ?: "empty error message")
-            }
-        }
-    }
+//    private fun getDroneById() {
+//        viewModelScope.launch {
+//            try {
+//                val drone = repository.getDroneById(droneId)
+//                _state.value = _state.value.copy(drone = drone)
+//            } catch (e: Exception) {
+//                Log.e("Error", e.message ?: "empty error message")
+//            }
+//        }
+//    }
 }

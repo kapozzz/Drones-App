@@ -6,16 +6,18 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vozdux.constants.EMPTY_STRING
 import com.example.vozdux.constants.emptyDrone
-import com.example.vozdux.domain.model.CompositeDroneElement
-import com.example.vozdux.domain.model.Cost
-import com.example.vozdux.domain.model.Drone
-import com.example.vozdux.domain.model.DroneImage
-import com.example.vozdux.domain.model.UploadDroneImage
+import com.example.vozdux.domain.model.drone.CompositeDroneElement
+import com.example.vozdux.domain.model.drone.Drone
+import com.example.vozdux.domain.model.drone.Image
+import com.example.vozdux.domain.model.drone.ImageSourceId
+import com.example.vozdux.domain.model.drone.toProperties
 import com.example.vozdux.domain.usecase.UseCases
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class NewDroneViewModel @AssistedInject constructor(
@@ -36,7 +38,7 @@ class NewDroneViewModel @AssistedInject constructor(
     )
     val bottomSheetState: State<BottomSheetStateHolder> = _bottomSheetState
 
-    private val _currentExpandedElement: MutableState<String> = mutableStateOf("")
+    private val _currentExpandedElement: MutableState<String> = mutableStateOf(EMPTY_STRING)
     val currentExpandedElement: State<String> = _currentExpandedElement
 
     private val _fieldsIsValid: MutableState<FieldIsValidState> = mutableStateOf(
@@ -44,37 +46,45 @@ class NewDroneViewModel @AssistedInject constructor(
     )
     val fieldIsValid: State<FieldIsValidState> = _fieldsIsValid
 
-    private val _uris: MutableState<List<UploadDroneImage>> = mutableStateOf(emptyList())
-    val uris: State<List<UploadDroneImage>> = _uris
+    private val _uris: MutableState<List<Image>> = mutableStateOf(emptyList())
+    val uris: State<List<Image>> = _uris
 
     private val _currentPage: MutableState<CurrentPage> = mutableStateOf(CurrentPage.Description)
     val currentPage: State<CurrentPage> = _currentPage
 
+    private var job: Job? = null
+
     init {
         if (droneId != "-1") {
+            Log.d("DEBUGGING", "droneId: $droneId")
+            refreshDrone(droneId)
+        }
+    }
 
-//            _state.value = _state.value.copy(
-//                 ебать бля получаем дрон ёпта
-//            )
+    private fun refreshDrone(droneId: String) {
+        job?.cancel()
+        job = viewModelScope.launch {
+            val droneWithImages = useCases.getDroneById(droneId)
+            droneWithImages?.let {
+                _currentDrone.value = it.drone
+                _uris.value = it.images
+            }
+
+            // TODO ERROR IF NULL
+//            useCases.getDrones().collect { newList ->
+//                newList.find { it.id == droneId }?.let {drone ->
+//                    _currentDrone.value = drone
+//                }
+//            }
+            Log.d("DEBUGGING", useCases.getDrones().toString())
         }
     }
 
     fun onEvent(event: NewDroneScreenEvent) {
         when (event) {
-            is NewDroneScreenEvent.NameChanged -> {
-                nameChanged(event.newName)
-            }
 
-            is NewDroneScreenEvent.ShortDescriptionChanged -> {
-                shortDescriptionChanged(event.newShortDescription)
-            }
-
-            is NewDroneScreenEvent.CreationDateChanged -> {
-                creationDateChanged(event.newCreationDate)
-            }
-
-            is NewDroneScreenEvent.CostChanged -> {
-                costChanged(event.newCost)
+            is NewDroneScreenEvent.FieldChanged -> {
+                fieldChanged(event.newDroneState)
             }
 
             is NewDroneScreenEvent.LongDescriptionElementChanged -> {
@@ -144,37 +154,39 @@ class NewDroneViewModel @AssistedInject constructor(
             is NewDroneScreenEvent.BottomSheetSetId -> {
                 bottomSheetSetId(event.id)
             }
+
+            is NewDroneScreenEvent.MainPropertiesChanged -> {
+                mainPropertiesChanged()
+            }
         }
     }
 
-    private fun bottomSheetSetId(id: String)  {
-        _bottomSheetState.value.bottomSheetContentState = _bottomSheetState.value.bottomSheetContentState.copy(
-            currentId = id
+    private fun mainPropertiesChanged() {
+        _currentDrone.value = _currentDrone.value.copy(
+            mainProperties = _currentDrone.value.mainProperties.toList().map {
+
+                if (it.name == _bottomSheetState.value.bottomSheetContentState.name) {
+                    it.copy(
+                        value = _bottomSheetState.value.bottomSheetContentState.content.toInt()
+                    )
+                } else it
+            }.toProperties()
         )
+        _bottomSheetState.value = _bottomSheetState.value.copy(
+            bottomSheetIsVisible = BottomSheetState.BottomSheetIsClosed
+        )
+        clearBottomSheetContent()
     }
 
-    private fun nameChanged(newName: String) {
-        _currentDrone.value = _currentDrone.value.copy(
-            name = newName
-        )
+    private fun fieldChanged(newDroneState: Drone) {
+        _currentDrone.value = newDroneState
     }
 
-    private fun shortDescriptionChanged(newShortDescription: String) {
-        _currentDrone.value = _currentDrone.value.copy(
-            shortDescription = newShortDescription
-        )
-    }
-
-    private fun creationDateChanged(newCreationDate: String) {
-        _currentDrone.value = _currentDrone.value.copy(
-            creationDate = newCreationDate
-        )
-    }
-
-    private fun costChanged(newCost: Cost) {
-        _currentDrone.value = _currentDrone.value.copy(
-            cost = newCost
-        )
+    private fun bottomSheetSetId(id: String) {
+        _bottomSheetState.value.bottomSheetContentState =
+            _bottomSheetState.value.bottomSheetContentState.copy(
+                currentId = id
+            )
     }
 
     private fun longDescriptionElementChanged(changedElement: CompositeDroneElement) {
@@ -191,7 +203,7 @@ class NewDroneViewModel @AssistedInject constructor(
     }
 
     private fun propertiesElementChanged(changedElement: CompositeDroneElement) {
-        val temp = _currentDrone.value.properties.map {
+        val temp = _currentDrone.value.otherProperties.map {
             if (it.name == changedElement.name) CompositeDroneElement(
                 changedElement.name,
                 changedElement.value
@@ -199,14 +211,14 @@ class NewDroneViewModel @AssistedInject constructor(
             else it
         }
         _currentDrone.value = _currentDrone.value.copy(
-            properties = temp.toMutableList()
+            otherProperties = temp.toMutableList()
         )
     }
 
     private fun newProperty() {
-        if (_bottomSheetState.value.bottomSheetContentState.currentId != "") {
+        if (_bottomSheetState.value.bottomSheetContentState.currentId != EMPTY_STRING) {
             _currentDrone.value = _currentDrone.value.copy(
-                properties = _currentDrone.value.properties.map {
+                otherProperties = _currentDrone.value.otherProperties.map {
                     if (it.id == _bottomSheetState.value.bottomSheetContentState.currentId) {
                         CompositeDroneElement(
                             name = _bottomSheetState.value.bottomSheetContentState.name,
@@ -216,9 +228,8 @@ class NewDroneViewModel @AssistedInject constructor(
                     } else it
                 }.toMutableList()
             )
-        }
-        else {
-            _currentDrone.value.properties.add(
+        } else {
+            _currentDrone.value.otherProperties.add(
                 CompositeDroneElement(
                     name = _bottomSheetState.value.bottomSheetContentState.name,
                     value = _bottomSheetState.value.bottomSheetContentState.content,
@@ -232,7 +243,7 @@ class NewDroneViewModel @AssistedInject constructor(
     }
 
     private fun newDescriptionHeadline() {
-        if (_bottomSheetState.value.bottomSheetContentState.currentId != "") {
+        if (_bottomSheetState.value.bottomSheetContentState.currentId != EMPTY_STRING) {
             _currentDrone.value = _currentDrone.value.copy(
                 longDescription = _currentDrone.value.longDescription.map {
                     if (it.id == _bottomSheetState.value.bottomSheetContentState.currentId) {
@@ -244,8 +255,7 @@ class NewDroneViewModel @AssistedInject constructor(
                     } else it
                 }.toMutableList()
             )
-        }
-        else {
+        } else {
             _currentDrone.value.longDescription.add(
                 CompositeDroneElement(
                     name = _bottomSheetState.value.bottomSheetContentState.name,
@@ -262,9 +272,9 @@ class NewDroneViewModel @AssistedInject constructor(
     private fun clearBottomSheetContent() {
         _bottomSheetState.value.bottomSheetContentState =
             _bottomSheetState.value.bottomSheetContentState.copy(
-                name = "",
-                content = "",
-                currentId = ""
+                name = EMPTY_STRING,
+                content = EMPTY_STRING,
+                currentId = EMPTY_STRING
             )
     }
 
@@ -308,28 +318,29 @@ class NewDroneViewModel @AssistedInject constructor(
 
     private fun saveDrone() {
         viewModelScope.launch {
-            val result = useCases.insertDroneUseCase(_currentDrone.value.copy(
-                images = _uris.value.map {
-                    DroneImage(
-                        url = it.id,
-                        source = "Source not working!"
+            val isSuccessful = useCases.insertDrone(_currentDrone.value.copy(
+                imageIDs = _uris.value.map {
+                    ImageSourceId(
+                        id = it.id,
+                        source = "source not working!"
                     )
                 }
             ))
-            if (result.isSuccessful) {
-                _uris.value.forEach {
-                    useCases.insertDroneImageUseCase(it)
+            if (isSuccessful) {
+                _uris.value.forEach { image ->
+                    useCases.insertImage(image)
                 }
             }
         }
     }
 
-    private fun urisChanged(newUris: List<UploadDroneImage>) {
+    private fun urisChanged(newUris: List<Image>) {
         _uris.value = newUris
     }
 
     private fun currentPageChanged(page: CurrentPage) {
         _currentPage.value = page
+        _currentExpandedElement.value = EMPTY_STRING
     }
 
     private fun bottomSheetContentChanged(contentState: BottomSheetContentState) {

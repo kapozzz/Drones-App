@@ -1,6 +1,5 @@
 package com.example.vozdux.presenter.new_drone
 
-import com.example.vozdux.domain.model.UploadDroneImage
 
 data class BottomSheetStateHolder(
     var bottomSheetIsVisible: BottomSheetState = BottomSheetState.BottomSheetIsClosed,
@@ -9,12 +8,6 @@ data class BottomSheetStateHolder(
         content = ""
     )
 )
-
-data class UrisState(
-    val urisState: List<UploadDroneImage>,
-    val isVisible: Boolean = false
-)
-
 data class BottomSheetContentState(
     val name: String,
     val content: String,
@@ -29,11 +22,13 @@ data class FieldIsValidState(
 sealed class BottomSheetState {
     object NewDescriptionHeadline : BottomSheetState()
     object NewProperty : BottomSheetState()
+    object EditMainProperty: BottomSheetState()
     object BottomSheetIsClosed : BottomSheetState()
 }
 sealed class CurrentPage {
     object Description: CurrentPage()
     object Properties: CurrentPage()
+    object  MainProperties: CurrentPage()
 }
 
 

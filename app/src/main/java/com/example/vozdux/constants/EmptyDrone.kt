@@ -1,21 +1,28 @@
 package com.example.vozdux.constants
 
-import com.example.vozdux.domain.model.Cost
-import com.example.vozdux.domain.model.Currency
-import com.example.vozdux.domain.model.Drone
-import com.example.vozdux.domain.model.DroneImage
+import com.example.vozdux.domain.model.drone.Cost
+import com.example.vozdux.domain.model.drone.Drone
+import com.example.vozdux.domain.model.drone.DroneProperties
+import com.example.vozdux.domain.model.drone.USD_CODE
 
 val emptyDrone = Drone(
-    name = "",
-    shortDescription = "",
+    name = EMPTY_STRING,
+    shortDescription = EMPTY_STRING ,
     longDescription = mutableListOf(),
-    properties = mutableListOf(),
-    creationDate = "",
-    country = "",
-    images = mutableListOf(),
+    otherProperties = mutableListOf(),
+    creationDate = EMPTY_STRING,
+    country = EMPTY_STRING,
+    imageIDs = mutableListOf(),
     cost = Cost(
-        value = "",
-        currency = Currency.USD
+        value = EMPTY_STRING,
+        currency = USD_CODE
+    ),
+    mainProperties = DroneProperties(
+        battery = 0,
+        flightRange = 0,
+        flightTime = 0,
+        maximumFlightHeight = 0,
+        maxVelocity = 0
     )
 )
 

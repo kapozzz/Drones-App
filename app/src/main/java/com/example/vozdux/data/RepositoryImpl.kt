@@ -1,62 +1,105 @@
 package com.example.vozdux.data
 
 import android.util.Log
-import com.example.vozdux.constants.emptyDrone
-import com.example.vozdux.data.util.FirebaseHelper
-import com.example.vozdux.data.util.FirebaseDefault
+import com.example.vozdux.data.local.DronesDatabase
+import com.example.vozdux.data.local.util.Pather
+import com.example.vozdux.data.remote.FirebaseDatabase
 import com.example.vozdux.domain.Repository
-import com.example.vozdux.domain.model.Drone
-import com.example.vozdux.domain.model.UploadDroneImage
-import com.example.vozdux.domain.model.UploadDroneImageResult
-import com.example.vozdux.domain.model.UploadDroneResult
-import com.google.firebase.database.DatabaseReference
+import com.example.vozdux.domain.model.drone.Drone
+import com.example.vozdux.domain.model.drone.DroneWithImages
+import com.example.vozdux.domain.model.drone.Image
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class RepositoryImpl @Inject constructor(
-    private val dronesHelper: FirebaseHelper
+    private val remoteDatabase: FirebaseDatabase,
+    private val localDatabase: DronesDatabase,
+    private val pather: Pather
 ) : Repository {
 
-    override suspend fun getDrones(): Flow<List<Drone>> {
-        return flow {
-            emit(listOf(emptyDrone))
+    private val scope = CoroutineScope(Dispatchers.Default)
+    private var job: Job? = null
+
+    init {
+        // wifi condition
+        // need application scope
+        CoroutineScope(Dispatchers.IO).launch {
+            remoteDatabase.loadingState.collect() {
+                if (it) {
+                    Log.d("DEB14", "LOADING COMPLETE")
+                    Log.d("DEB14", "DRONES: ${remoteDatabase.dronesStateFlow.value}")
+                    Log.d("DEB14", "IMAGES: ${remoteDatabase.imagesStateFlow.value}")
+                    job?.cancel()
+                    job = scope.launch {
+                        localDatabase.dao().insertListOfImages(
+                            remoteDatabase.imagesStateFlow.value.map { pair ->
+                                pather.path(
+                                    Image(
+                                        uri = pair.second,
+                                        id = pair.first
+                                    )
+                                )
+                            }
+                        )
+                        localDatabase.dao().insertListOfDrones(
+                            remoteDatabase.dronesStateFlow.value
+                        )
+                    }
+                }
+            }
+
         }
-        // not working
     }
 
-    override suspend fun getDroneById(droneId: String): Drone {
-        return emptyDrone
-        // not working
+    override suspend fun getDrones(): Flow<List<DroneWithImages>> {
+        return localDatabase.dao().getAllDrones().map { drones ->
+            if (drones.isEmpty()) emptyList()
+            else {
+                drones.map { drone ->
+                    DroneWithImages(
+                        drone = drone,
+                        images = drone.imageIDs.map {
+                            val temp = localDatabase.dao().getImageById(it.id)
+                            pather.unPath(temp)
+                        }
+                    )
+                }
+            }
+        }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun insertDrone(drone: Drone): UploadDroneResult {
-        val database: DatabaseReference = dronesHelper.database
-        var result: UploadDroneResult
-        val tempDrone = drone.copy(
-            id = if (drone.id.isNullOrEmpty()) dronesHelper.getNewKey() else drone.id
-        )
-        database.child(tempDrone.id!!).setValue(tempDrone)
-            .addOnCompleteListener {
-                result = UploadDroneResult(true, tempDrone.id)
+    override suspend fun getDroneById(droneId: String): DroneWithImages? {
+        return withContext(Dispatchers.IO) {
+            val drone = localDatabase.dao().getDroneById(droneId) ?: return@withContext null
+            val images = drone.imageIDs.map {
+                val temp = localDatabase.dao().getImageById(it.id)
+                Image(
+                    id = it.id,
+                    uri = pather.unPath(temp).uri
+                )
             }
-            .addOnCanceledListener {
-                result = UploadDroneResult()
-            }
-            .addOnFailureListener {
-                result = UploadDroneResult()
-            }.addOnSuccessListener {
-                result = UploadDroneResult(true, tempDrone.id)
-            }
-        return UploadDroneResult(true, tempDrone.id)
-    }
-
-    override suspend fun insertDroneImage(image: UploadDroneImage): UploadDroneImageResult {
-        val path = dronesHelper.storage
-            .child(
-                image.id
+            Log.d("DEB", "images: $images")
+            return@withContext DroneWithImages(
+                drone = drone,
+                images = images
             )
-        path.putFile(image.uri)
-        return UploadDroneImageResult()
+        }
+    }
+
+    override suspend fun insertDrone(drone: Drone): Boolean {
+        return remoteDatabase.insertDrone(drone)
+    }
+
+    override suspend fun insertImage(image: Image): Boolean {
+        return remoteDatabase.insertImage(image)
     }
 }

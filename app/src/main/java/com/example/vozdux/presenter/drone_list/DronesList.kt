@@ -14,14 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.vozdux.presenter.drone_list.components.DroneItem
-
-//@Preview
-//@Composable
-//fun Preview() {
-//    DronesList(
-//        viewModel = DronesListViewModel(repository = RepositoryImpl())
-//    )
-//}
+import com.example.vozdux.presenter.util.Screen
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -33,16 +26,16 @@ fun DronesList(
     Scaffold(
         floatingActionButton = {
             Button(onClick = {
-                // TODO
+                navController.navigate(Screen.NewDroneScreen.route)
             }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add new drone")
             }
         }
     ) {
         LazyColumn {
-            items(viewModel.state.value.drones) { drone ->
-                DroneItem(modifier = Modifier.padding(8.dp), drone = drone, onClickAction = {
-                    // TODO
+            items(viewModel.state.value.drones) { element ->
+                DroneItem(modifier = Modifier.padding(8.dp), element = element, onClick = {
+                    navController.navigate(Screen.NewDroneScreen.route + "?drone=${element.drone.id}")
                 })
             }
         }

@@ -7,7 +7,6 @@ class FirebaseHelper (
     val database: DatabaseReference,
     val storage: StorageReference
 ) {
-
     fun getNewKey(): String {
         return database.push().key!!
     }

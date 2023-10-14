@@ -31,7 +31,6 @@ fun NewDroneShortDescription(
         TextField(
             modifier = modifier,
             minLines = 2,
-            maxLines = 5,
             value = value,
             onValueChange = onValueChange,
             label = {
