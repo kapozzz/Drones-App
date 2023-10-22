@@ -1,17 +1,17 @@
 package com.example.vozdux.presenter.new_drone.components
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.vozdux.R
 
 @Composable
 fun NewDroneShortDescription(
@@ -21,11 +21,10 @@ fun NewDroneShortDescription(
     modifier: Modifier = Modifier
 ) {
 
-    Card(
+    Surface(
         modifier = modifier,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        shadowElevation = 2.dp,
+        shape = RoundedCornerShape(4.dp)
     ) {
 
         TextField(
@@ -35,21 +34,23 @@ fun NewDroneShortDescription(
             onValueChange = onValueChange,
             label = {
                 Text(
-                    text = "Short description",
+                    text = stringResource(R.string.short_description),
                     style = MaterialTheme.typography.titleSmall
                 )
             },
             isError = isError,
             supportingText = {
                 if (isError) {
-                    Text(text = "Short description can't be empty")
+                    Text(text = stringResource(R.string.short_description_can_t_be_empty))
                 }
             },
             colors = TextFieldDefaults.colors(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent
+                errorIndicatorColor = Color.Transparent,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondary,
+                focusedContainerColor = MaterialTheme.colorScheme.secondary
             ),
             shape = RoundedCornerShape(12.dp)
         )

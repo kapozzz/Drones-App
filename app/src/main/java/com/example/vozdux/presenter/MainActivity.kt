@@ -59,8 +59,8 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             val droneId = it.arguments?.getString("drone") ?: "-1"
-                            val newDroneViewModel = newDroneViewModelFactory.create(droneId)
-                            NewDrone( newDroneViewModel )
+                            val newDroneViewModel = newDroneViewModelFactory.create(droneId, navController)
+                            NewDrone( newDroneViewModel , navController )
                         }
                     }
                 }

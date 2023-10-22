@@ -1,20 +1,12 @@
 package com.example.vozdux.data.local
 
-import android.content.Context
-import android.net.Uri
-import android.os.Environment
 import androidx.room.TypeConverter
-import com.example.vozdux.data.local.util.ImageEntity
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
 import com.example.vozdux.domain.model.drone.Cost
-import com.example.vozdux.domain.model.drone.Drone
 import com.example.vozdux.domain.model.drone.DroneProperties
-import com.example.vozdux.domain.model.drone.Image
 import com.example.vozdux.domain.model.drone.ImageSourceId
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.io.File
-import javax.inject.Inject
 
 class DronesTypeConverter {
 

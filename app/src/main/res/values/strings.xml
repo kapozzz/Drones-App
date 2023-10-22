@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">vozdux</string>
+    <string name="drone_constructor">Drone constructor</string>
+    <string name="creation_date">Creation date</string>
+    <string name="creation_date_can_t_be_empty">Creation date can\'t be empty</string>
+    <string name="name_of_drone">Name of drone</string>
+    <string name="drone_name_can_t_be_empty">Drone name can\'t be empty</string>
+    <string name="description">Description</string>
+    <string name="general_properties">General properties</string>
+    <string name="other_properties">Other properties</string>
+    <string name="long_description">Long description</string>
+    <string name="edit">Edit</string>
+    <string name="show_expanded">Show expanded</string>
+    <string name="cost">Cost</string>
+    <string name="cost_can_t_be_empty">Cost can\'t be empty</string>
+    <string name="short_description">Short description</string>
+    <string name="short_description_can_t_be_empty">Short description can\'t be empty</string>
+    <string name="image">image</string>
+    <string name="drones">Drones</string>
+    <string name="search">Search</string>
+    <string name="add_new_property">Add new property</string>
+    <string name="save">Save</string>
+    <string name="add_photo">Add photo</string>
+    <string name="add_new_drone">Add new drone</string>
 </resources>

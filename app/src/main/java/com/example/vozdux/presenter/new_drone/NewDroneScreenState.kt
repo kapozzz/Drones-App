@@ -31,6 +31,10 @@ sealed class CurrentPage {
     object  MainProperties: CurrentPage()
 }
 
+sealed class NewDroneScreenState {
+    object Loading: NewDroneScreenState()
+    object Screen: NewDroneScreenState()
+}
 
 
 

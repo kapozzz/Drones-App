@@ -2,8 +2,9 @@ package com.example.vozdux.data
 
 import android.util.Log
 import com.example.vozdux.data.local.DronesDatabase
-import com.example.vozdux.data.local.util.Pather
+import com.example.vozdux.data.local.util.ImagesDirectoryHelper
 import com.example.vozdux.data.remote.FirebaseDatabase
+import com.example.vozdux.data.util.FirebaseImageLoader
 import com.example.vozdux.domain.Repository
 import com.example.vozdux.domain.model.drone.Drone
 import com.example.vozdux.domain.model.drone.DroneWithImages
@@ -23,7 +24,8 @@ import javax.inject.Singleton
 class RepositoryImpl @Inject constructor(
     private val remoteDatabase: FirebaseDatabase,
     private val localDatabase: DronesDatabase,
-    private val pather: Pather
+    private val directoryHelper: ImagesDirectoryHelper,
+    private val imageLoader: FirebaseImageLoader
 ) : Repository {
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -33,30 +35,23 @@ class RepositoryImpl @Inject constructor(
         // wifi condition
         // need application scope
         CoroutineScope(Dispatchers.IO).launch {
-            remoteDatabase.loadingState.collect() {
-                if (it) {
-                    Log.d("DEB14", "LOADING COMPLETE")
-                    Log.d("DEB14", "DRONES: ${remoteDatabase.dronesStateFlow.value}")
-                    Log.d("DEB14", "IMAGES: ${remoteDatabase.imagesStateFlow.value}")
+            remoteDatabase.loadingState.collect() { loadingIsComplete ->
+                if (loadingIsComplete) {
                     job?.cancel()
                     job = scope.launch {
-                        localDatabase.dao().insertListOfImages(
-                            remoteDatabase.imagesStateFlow.value.map { pair ->
-                                pather.path(
-                                    Image(
-                                        uri = pair.second,
-                                        id = pair.first
-                                    )
-                                )
-                            }
-                        )
+                        remoteDatabase.imagesStateFlow.value.map { pair ->
+                            val bitmap = imageLoader.invoke(pair.second.toString())
+                            directoryHelper.saveImageToInternalStorage(
+                                pair.first,
+                                bitmap
+                            )
+                        }
                         localDatabase.dao().insertListOfDrones(
                             remoteDatabase.dronesStateFlow.value
                         )
                     }
                 }
             }
-
         }
     }
 
@@ -64,12 +59,12 @@ class RepositoryImpl @Inject constructor(
         return localDatabase.dao().getAllDrones().map { drones ->
             if (drones.isEmpty()) emptyList()
             else {
+                val images = directoryHelper.loadImagesFromInternalStorage()
                 drones.map { drone ->
                     DroneWithImages(
                         drone = drone,
-                        images = drone.imageIDs.map {
-                            val temp = localDatabase.dao().getImageById(it.id)
-                            pather.unPath(temp)
+                        images = drone.imageIDs.mapNotNull { imageSourceId ->
+                            images.find { image -> image.id == imageSourceId.id }
                         }
                     )
                 }
@@ -80,14 +75,10 @@ class RepositoryImpl @Inject constructor(
     override suspend fun getDroneById(droneId: String): DroneWithImages? {
         return withContext(Dispatchers.IO) {
             val drone = localDatabase.dao().getDroneById(droneId) ?: return@withContext null
-            val images = drone.imageIDs.map {
-                val temp = localDatabase.dao().getImageById(it.id)
-                Image(
-                    id = it.id,
-                    uri = pather.unPath(temp).uri
-                )
+            val _images = directoryHelper.loadImagesFromInternalStorage()
+            val images = drone.imageIDs.mapNotNull { imageSourceId ->
+                _images.find { image -> image.id == imageSourceId.id }
             }
-            Log.d("DEB", "images: $images")
             return@withContext DroneWithImages(
                 drone = drone,
                 images = images

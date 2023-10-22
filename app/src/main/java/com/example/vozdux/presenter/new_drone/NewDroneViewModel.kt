@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.vozdux.constants.EMPTY_STRING
 import com.example.vozdux.constants.emptyDrone
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
@@ -18,16 +19,32 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class NewDroneViewModel @AssistedInject constructor(
     private val useCases: UseCases,
+    @Assisted(value = "navController") private val navController: NavController,
     @Assisted(value = "droneId") private val droneId: String
 ) : ViewModel() {
 
     @AssistedFactory
     interface NewDroneViewModelFactory {
-        fun create(@Assisted(value = "droneId") droneId: String): NewDroneViewModel
+        fun create(
+            @Assisted(value = "droneId") droneId: String,
+            @Assisted(value = "navController") navController: NavController
+        ): NewDroneViewModel
+    }
+
+    private var _screenState: MutableState<NewDroneScreenState> = mutableStateOf(NewDroneScreenState.Screen)
+    val screenState: State<NewDroneScreenState> = _screenState
+
+    init {
+        if (droneId != "-1") {
+            _screenState.value = NewDroneScreenState.Loading
+            refreshDrone(droneId)
+        }
     }
 
     private val _currentDrone: MutableState<Drone> = mutableStateOf(emptyDrone)
@@ -54,29 +71,21 @@ class NewDroneViewModel @AssistedInject constructor(
 
     private var job: Job? = null
 
-    init {
-        if (droneId != "-1") {
-            Log.d("DEBUGGING", "droneId: $droneId")
-            refreshDrone(droneId)
-        }
-    }
-
     private fun refreshDrone(droneId: String) {
         job?.cancel()
         job = viewModelScope.launch {
-            val droneWithImages = useCases.getDroneById(droneId)
-            droneWithImages?.let {
-                _currentDrone.value = it.drone
-                _uris.value = it.images
+            val result = async {
+                delay(2000L)
+                val droneWithImages = useCases.getDroneById(droneId)
+                droneWithImages?.let {
+                    _currentDrone.value = it.drone
+                    _uris.value = it.images
+                }
             }
-
+            result.await().also {
+                _screenState.value = NewDroneScreenState.Screen
+            }
             // TODO ERROR IF NULL
-//            useCases.getDrones().collect { newList ->
-//                newList.find { it.id == droneId }?.let {drone ->
-//                    _currentDrone.value = drone
-//                }
-//            }
-            Log.d("DEBUGGING", useCases.getDrones().toString())
         }
     }
 
@@ -331,6 +340,7 @@ class NewDroneViewModel @AssistedInject constructor(
                     useCases.insertImage(image)
                 }
             }
+            navController.popBackStack()
         }
     }
 

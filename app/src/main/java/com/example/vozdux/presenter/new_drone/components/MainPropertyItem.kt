@@ -13,15 +13,17 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.vozdux.R
 import com.example.vozdux.domain.model.drone.PropertyElement
 
 @Composable
@@ -37,18 +39,15 @@ fun MainPropertyItem(
     val isVisible =
         currentExpandedElement == currentItem.id
 
-    Card(
+    Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        shape = RoundedCornerShape(4.dp),
+        shadowElevation = 2.dp
     ) {
-        Column{
-
+        Column {
             Button(
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
@@ -62,7 +61,8 @@ fun MainPropertyItem(
                 ) {
                     Text(
                         text = currentItem.name,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleSmall
                     )
 
                     Row(
@@ -71,7 +71,7 @@ fun MainPropertyItem(
 
                         if (isVisible) Button(
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                containerColor = MaterialTheme.colorScheme.secondary
                             ),
                             onClick = {
                                 editItem(currentItem)
@@ -79,7 +79,7 @@ fun MainPropertyItem(
                             Icon(
                                 modifier = Modifier.size(20.dp),
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit",
+                                contentDescription = stringResource(id = R.string.edit),
                                 tint = MaterialTheme.colorScheme.onBackground,
                             )
                         }
@@ -87,7 +87,7 @@ fun MainPropertyItem(
                         Icon(
                             imageVector = if (isVisible)
                                 Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Show expanded",
+                            contentDescription = stringResource(id = R.string.show_expanded),
                             tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
@@ -96,7 +96,14 @@ fun MainPropertyItem(
             }
 
             if (isVisible) {
-                Text(modifier = Modifier.padding(16.dp), text = currentItem.value.toString())
+                Text(
+                    modifier = Modifier.padding(
+                        vertical = 8.dp,
+                        horizontal = 32.dp
+                    ),
+                    text = currentItem.value.toString(),
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
