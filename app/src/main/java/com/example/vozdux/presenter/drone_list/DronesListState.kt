@@ -1,9 +1,9 @@
 package com.example.vozdux.presenter.drone_list
 
-import com.example.vozdux.domain.model.drone.DroneWithImages
+import com.example.vozdux.domain.model.drone.Drone
 
 data class DronesListState(
-    val drones: List<DroneWithImages>
+    val drones: List<Drone>
 )
 
 sealed class DroneListScreenState {

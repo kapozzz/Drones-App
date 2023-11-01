@@ -22,4 +22,11 @@
     <string name="save">Save</string>
     <string name="add_photo">Add photo</string>
     <string name="add_new_drone">Add new drone</string>
+    <string name="delete_image">Delete image</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="confirm">Confirm</string>
+    <string name="can_t_be_empty"> can\'t be empty!</string>
+    <string name="country">Country</string>
+    <string name="name">Name</string>
+    <string name="content">Content</string>
 </resources>

@@ -5,7 +5,6 @@ import androidx.navigation.NavController
 import com.example.vozdux.presenter.generalComponents.LoadingScreen
 import com.example.vozdux.presenter.new_drone.components.NewDroneScreen
 
-
 @Composable
 fun NewDrone(
     viewModel: NewDroneViewModel,

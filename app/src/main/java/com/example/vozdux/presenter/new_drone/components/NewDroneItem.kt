@@ -26,20 +26,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.vozdux.R
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
+import com.example.vozdux.domain.model.drone.PropertyElement
+import java.lang.IllegalStateException
 
 @Composable
-fun NewDroneItem(
-    currentItem: CompositeDroneElement,
-    currentExpandedElement: String,
+fun <T>NewDroneItem(
+    currentItem: T,
+    name: String,
+    content: String,
     onExpandClick: () -> Unit,
     onCollapseClick: () -> Unit,
-    editItem: (currentItem: CompositeDroneElement) -> Unit,
-    modifier: Modifier = Modifier
+    editItem: (currentItem: T) -> Unit,
+    modifier: Modifier = Modifier,
+    isExpanded: Boolean = false
 ) {
-
-    val isVisible =
-        currentExpandedElement == currentItem.id
-
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -53,7 +53,7 @@ fun NewDroneItem(
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    if (isVisible) onCollapseClick()
+                    if (isExpanded) onCollapseClick()
                     else onExpandClick()
                 }) {
                 Row(
@@ -62,7 +62,7 @@ fun NewDroneItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = currentItem.name,
+                        text = name,
                         color = MaterialTheme.colorScheme.onBackground,
                         style = MaterialTheme.typography.titleSmall
                     )
@@ -72,7 +72,7 @@ fun NewDroneItem(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        if (isVisible) Button(
+                        if (isExpanded) Button(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary
                             ),
@@ -89,7 +89,7 @@ fun NewDroneItem(
                         }
 
                         Icon(
-                            imageVector = if (isVisible)
+                            imageVector = if (isExpanded)
                                 Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = stringResource(R.string.show_expanded),
                             tint = MaterialTheme.colorScheme.onBackground
@@ -99,10 +99,10 @@ fun NewDroneItem(
                 }
             }
 
-            if (isVisible) {
+            if (isExpanded) {
                 Text(
                     modifier = Modifier.padding(16.dp),
-                    text = currentItem.value,
+                    text = content,
                     style = MaterialTheme.typography.bodySmall
                 )
             }

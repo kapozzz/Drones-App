@@ -1,6 +1,5 @@
 package com.example.vozdux.presenter.new_drone
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -11,8 +10,7 @@ import com.example.vozdux.constants.EMPTY_STRING
 import com.example.vozdux.constants.emptyDrone
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
 import com.example.vozdux.domain.model.drone.Drone
-import com.example.vozdux.domain.model.drone.Image
-import com.example.vozdux.domain.model.drone.ImageSourceId
+import com.example.vozdux.domain.model.drone.UriImage
 import com.example.vozdux.domain.model.drone.toProperties
 import com.example.vozdux.domain.usecase.UseCases
 import dagger.assisted.Assisted
@@ -37,7 +35,8 @@ class NewDroneViewModel @AssistedInject constructor(
         ): NewDroneViewModel
     }
 
-    private var _screenState: MutableState<NewDroneScreenState> = mutableStateOf(NewDroneScreenState.Screen)
+    private var _screenState: MutableState<NewDroneScreenState> =
+        mutableStateOf(NewDroneScreenState.Screen)
     val screenState: State<NewDroneScreenState> = _screenState
 
     init {
@@ -58,16 +57,11 @@ class NewDroneViewModel @AssistedInject constructor(
     private val _currentExpandedElement: MutableState<String> = mutableStateOf(EMPTY_STRING)
     val currentExpandedElement: State<String> = _currentExpandedElement
 
-    private val _fieldsIsValid: MutableState<FieldIsValidState> = mutableStateOf(
-        FieldIsValidState()
-    )
-    val fieldIsValid: State<FieldIsValidState> = _fieldsIsValid
-
-    private val _uris: MutableState<List<Image>> = mutableStateOf(emptyList())
-    val uris: State<List<Image>> = _uris
-
     private val _currentPage: MutableState<CurrentPage> = mutableStateOf(CurrentPage.Description)
     val currentPage: State<CurrentPage> = _currentPage
+
+    private val _currentImageToShow: MutableState<UriImage?> = mutableStateOf(null)
+    val currentImageToShow: State<UriImage?> = _currentImageToShow
 
     private var job: Job? = null
 
@@ -75,12 +69,9 @@ class NewDroneViewModel @AssistedInject constructor(
         job?.cancel()
         job = viewModelScope.launch {
             val result = async {
-                delay(2000L)
-                val droneWithImages = useCases.getDroneById(droneId)
-                droneWithImages?.let {
-                    _currentDrone.value = it.drone
-                    _uris.value = it.images
-                }
+                delay(500L)
+                val drone = useCases.getDroneById(droneId)
+                drone?.let { _currentDrone.value = it }
             }
             result.await().also {
                 _screenState.value = NewDroneScreenState.Screen
@@ -112,36 +103,12 @@ class NewDroneViewModel @AssistedInject constructor(
                 TODO()
             }
 
-            is NewDroneScreenEvent.PropertyNew -> {
-                newProperty()
-            }
-
-            is NewDroneScreenEvent.DescriptionHeadlineNew -> {
-                newDescriptionHeadline()
-            }
-
             is NewDroneScreenEvent.BottomSheetStateChanged -> {
-                bottomSheetStateChanged(event.state)
+                bottomSheetStateChanged(event.isVisible)
             }
 
             is NewDroneScreenEvent.CurrentExpandedElementChanged -> {
                 currentExpandedElementChanged(event.name)
-            }
-
-            is NewDroneScreenEvent.ErrorInName -> {
-                errorInName(event.isValid)
-            }
-
-            is NewDroneScreenEvent.ErrorInShortDescription -> {
-                errorInShortDescription(event.isValid)
-            }
-
-            is NewDroneScreenEvent.ErrorInCreationDate -> {
-                errorInCreationDate(event.isValid)
-            }
-
-            is NewDroneScreenEvent.ErrorInCost -> {
-                errorInCost(event.isValid)
             }
 
             is NewDroneScreenEvent.SaveDrone -> {
@@ -164,10 +131,34 @@ class NewDroneViewModel @AssistedInject constructor(
                 bottomSheetSetId(event.id)
             }
 
-            is NewDroneScreenEvent.MainPropertiesChanged -> {
-                mainPropertiesChanged()
+            NewDroneScreenEvent.SaveBottomSheet -> {
+                when (_currentPage.value) {
+                    CurrentPage.Description -> newDescriptionHeadline()
+                    CurrentPage.MainProperties -> mainPropertiesChanged()
+                    CurrentPage.Properties -> newProperty()
+                }
+            }
+
+            is NewDroneScreenEvent.ShowImage -> {
+                changeImageToShow(event.image)
+            }
+
+            is NewDroneScreenEvent.DeleteUriImage -> {
+                deleteUriImage(event.image)
             }
         }
+    }
+
+    private fun deleteUriImage(image: UriImage) {
+        _currentDrone.value = _currentDrone.value.copy(
+            images =  _currentDrone.value.images.mapNotNull {
+                if (it == image) null else it
+            }
+        )
+    }
+
+    private fun changeImageToShow(image: UriImage?) {
+        _currentImageToShow.value = image
     }
 
     private fun mainPropertiesChanged() {
@@ -181,9 +172,7 @@ class NewDroneViewModel @AssistedInject constructor(
                 } else it
             }.toProperties()
         )
-        _bottomSheetState.value = _bottomSheetState.value.copy(
-            bottomSheetIsVisible = BottomSheetState.BottomSheetIsClosed
-        )
+        _bottomSheetState.value = _bottomSheetState.value.copy(bottomSheetIsVisible = false)
         clearBottomSheetContent()
     }
 
@@ -245,9 +234,7 @@ class NewDroneViewModel @AssistedInject constructor(
                 )
             )
         }
-        _bottomSheetState.value = _bottomSheetState.value.copy(
-            bottomSheetIsVisible = BottomSheetState.BottomSheetIsClosed
-        )
+        _bottomSheetState.value = _bottomSheetState.value.copy(bottomSheetIsVisible = false)
         clearBottomSheetContent()
     }
 
@@ -272,9 +259,7 @@ class NewDroneViewModel @AssistedInject constructor(
                 )
             )
         }
-        _bottomSheetState.value = _bottomSheetState.value.copy(
-            bottomSheetIsVisible = BottomSheetState.BottomSheetIsClosed
-        )
+        _bottomSheetState.value = _bottomSheetState.value.copy(bottomSheetIsVisible = false)
         clearBottomSheetContent()
     }
 
@@ -288,64 +273,29 @@ class NewDroneViewModel @AssistedInject constructor(
     }
 
 
-    private fun bottomSheetStateChanged(state: BottomSheetState) {
+    private fun bottomSheetStateChanged(state: Boolean) {
         _bottomSheetState.value = _bottomSheetState.value.copy(
             bottomSheetIsVisible = state
         )
-        if (state is BottomSheetState.BottomSheetIsClosed) {
-            clearBottomSheetContent()
-        }
+        if (!state) { clearBottomSheetContent() }
     }
 
     private fun currentExpandedElementChanged(name: String) {
         _currentExpandedElement.value = name
     }
 
-    private fun errorInName(isValid: Boolean) {
-        _fieldsIsValid.value = _fieldsIsValid.value.copy(
-            nameIsEmpty = isValid
-        )
-    }
-
-    private fun errorInShortDescription(isValid: Boolean) {
-        _fieldsIsValid.value = _fieldsIsValid.value.copy(
-            shortDescriptionIsEmpty = isValid
-        )
-    }
-
-    private fun errorInCreationDate(isValid: Boolean) {
-        _fieldsIsValid.value = _fieldsIsValid.value.copy(
-            creationDateIsEmpty = isValid
-        )
-    }
-
-    private fun errorInCost(isValid: Boolean) {
-        _fieldsIsValid.value = _fieldsIsValid.value.copy(
-            costIsEmpty = isValid
-        )
-    }
-
     private fun saveDrone() {
         viewModelScope.launch {
-            val isSuccessful = useCases.insertDrone(_currentDrone.value.copy(
-                imageIDs = _uris.value.map {
-                    ImageSourceId(
-                        id = it.id,
-                        source = "source not working!"
-                    )
-                }
-            ))
-            if (isSuccessful) {
-                _uris.value.forEach { image ->
-                    useCases.insertImage(image)
-                }
-            }
+            _screenState.value = NewDroneScreenState.Loading
+            useCases.insertDrone(_currentDrone.value)
             navController.popBackStack()
         }
     }
 
-    private fun urisChanged(newUris: List<Image>) {
-        _uris.value = newUris
+    private fun urisChanged(newUris: List<UriImage>) {
+        _currentDrone.value = _currentDrone.value.copy(
+            images = _currentDrone.value.images.plus(newUris)
+        )
     }
 
     private fun currentPageChanged(page: CurrentPage) {

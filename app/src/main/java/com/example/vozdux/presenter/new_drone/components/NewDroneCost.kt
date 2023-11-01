@@ -1,7 +1,6 @@
 package com.example.vozdux.presenter.new_drone.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -10,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -24,35 +25,36 @@ import com.example.vozdux.domain.model.drone.USD_CODE
 @Composable
 fun NewDroneCost(
     value: Cost,
-    onValueChange: (newValue: String) -> Unit,
-    isError: Boolean,
+    onValueChanged: (newValue: String) -> Unit,
     currentCurrencyChanged: (newCost: Cost) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
+    val isError = remember {
+        mutableStateOf(false)
+    }
+
     TextField(
         modifier = modifier
             .shadow(2.dp, shape = RoundedCornerShape(4.dp))
-            .fillMaxSize()
             .background(
                 color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(4.dp)
             ),
         singleLine = true,
         value = value.value,
-        onValueChange = onValueChange,
+        onValueChange = {newValue ->
+            isError.value = newValue.isEmpty()
+            onValueChanged.invoke(newValue)
+        },
         label = {
             Text(
                 text = stringResource(R.string.cost),
                 style = MaterialTheme.typography.titleSmall
             )
         },
-        isError = isError,
-        supportingText = {
-            if (isError) {
-                Text(text = stringResource(R.string.cost_can_t_be_empty))
-            }
-        },
+        isError = isError.value,
+        supportingText = { if (isError.value) Text(text = stringResource(R.string.cost_can_t_be_empty)) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         suffix = {
             Button(

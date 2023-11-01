@@ -24,14 +24,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.example.vozdux.R
-import com.example.vozdux.domain.model.drone.DroneWithImages
+import com.example.vozdux.domain.model.drone.Drone
 
 @Composable
 fun DroneItem(
-    element: DroneWithImages,
+    element: Drone,
     onClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -44,7 +42,7 @@ fun DroneItem(
             .background(MaterialTheme.colorScheme.secondary),
         shape = RoundedCornerShape(4.dp),
         onClick = {
-            onClick.invoke(element.drone.id)
+            onClick.invoke(element.id)
         }
     ) {
         Column(
@@ -71,14 +69,14 @@ fun DroneItem(
                         .padding(60.dp)
                         .size(60.dp),
                     imageVector = Icons.Default.ImageNotSupported,
-                    contentDescription = element.drone.name + stringResource(R.string.image)
+                    contentDescription = element.name + stringResource(R.string.image)
                 )
             }
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = element.drone.name,
+                    text = element.name,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(
@@ -87,7 +85,7 @@ fun DroneItem(
                         .height(4.dp)
                 )
                 Text(
-                    text = element.drone.shortDescription,
+                    text = element.shortDescription,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
