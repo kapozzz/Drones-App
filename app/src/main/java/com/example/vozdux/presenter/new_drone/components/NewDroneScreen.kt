@@ -8,16 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,9 +36,7 @@ fun NewDroneScreen(
 ) {
     val currentDrone = viewModel.currentDrone.value
     val currentImageToShow = viewModel.currentImageToShow.value
-    val lazyListState = LazyListState()
     val onEventLambda = { event: NewDroneScreenEvent -> viewModel.onEvent(event) }
-    val scaffoldState = rememberScaffoldState()
 
     Scaffold(
         modifier = Modifier
@@ -67,13 +63,14 @@ fun NewDroneScreen(
         }
     ) { padding ->
         Surface(
-            modifier = Modifier.fillMaxSize().padding(8.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
         ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
-                state = lazyListState
+                    .padding(padding)
             ) {
 
                 item {
@@ -89,6 +86,15 @@ fun NewDroneScreen(
                         images = currentDrone.images,
                         onEvent = onEventLambda,
                         modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                item {
+                    PropertiesRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        onEvent = onEventLambda
                     )
                 }
 
@@ -197,11 +203,12 @@ fun NewDroneScreen(
                         onValueChanged = { value ->
                             onEventLambda(
                                 NewDroneScreenEvent.FieldChanged(
-                                    currentDrone.copy(battery = value.filter { it.isDigit() }.toInt())
+                                    currentDrone.copy(battery = if (value.isNotEmpty()) value.filter { it.isDigit() }
+                                        .toInt() else 0)
                                 )
                             )
                         },
-                        minLines = 4,
+                        maxLines = 1,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp, top = 4.dp),
@@ -212,9 +219,90 @@ fun NewDroneScreen(
                 }
 
                 item {
-                    PropertiesRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        onEvent = onEventLambda
+                    CustomTextField(
+                        label = stringResource(R.string.flight_range),
+                        value = currentDrone.flightRange.toString(),
+                        onValueChanged = { value ->
+                            onEventLambda(
+                                NewDroneScreenEvent.FieldChanged(
+                                    currentDrone.copy(flightRange = if (value.isNotEmpty()) value.filter { it.isDigit() }
+                                        .toInt() else 0)
+                                )
+                            )
+                        },
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp, top = 4.dp),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
+                    )
+                }
+
+                item {
+                    CustomTextField(
+                        label = stringResource(R.string.max_velocity),
+                        value = currentDrone.maxVelocity.toString(),
+                        onValueChanged = { value ->
+                            onEventLambda(
+                                NewDroneScreenEvent.FieldChanged(
+                                    currentDrone.copy(maxVelocity = if (value.isNotEmpty()) value.filter { it.isDigit() }
+                                        .toInt() else 0)
+                                )
+                            )
+                        },
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp, top = 4.dp),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
+                    )
+                }
+
+                item {
+                    CustomTextField(
+                        label = stringResource(R.string.flight_time),
+                        value = currentDrone.flightTime.toString(),
+                        onValueChanged = { value ->
+                            onEventLambda(
+                                NewDroneScreenEvent.FieldChanged(
+                                    currentDrone.copy(flightTime = if (value.isNotEmpty()) value.filter { it.isDigit() }
+                                        .toInt() else 0)
+                                )
+                            )
+                        },
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp, top = 4.dp),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
+                    )
+                }
+
+                item {
+                    CustomTextField(
+                        label = stringResource(R.string.maximum_flight_height),
+                        value = currentDrone.maximumFlightHeight.toString(),
+                        onValueChanged = { value ->
+                            onEventLambda(
+                                NewDroneScreenEvent.FieldChanged(
+                                    currentDrone.copy(maximumFlightHeight = if (value.isNotEmpty()) value.filter { it.isDigit() }
+                                        .toInt() else 0)
+                                )
+                            )
+                        },
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp, top = 4.dp),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
                     )
                 }
 
@@ -228,6 +316,7 @@ fun NewDroneScreen(
             }
         }
     }
+
     if (currentImageToShow != null) ImageScreen(
         image = currentImageToShow,
         onCloseClick = { viewModel.onEvent(NewDroneScreenEvent.ShowImage(null)) }

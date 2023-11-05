@@ -50,10 +50,6 @@ fun ImagesEditHandler(
         mutableStateOf(if (images.isNotEmpty()) images.first() else null)
     }
 
-    val showImage = remember {
-        mutableStateOf(false)
-    }
-
     val alertDialogState = remember {
         mutableStateOf(false)
     }

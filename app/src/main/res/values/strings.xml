@@ -31,4 +31,10 @@
     <string name="content">Content</string>
     <string name="battery">Battery</string>
     <string name="add">Add</string>
+    <string name="flight_range">Flight range</string>
+    <string name="flight_time">Flight time</string>
+    <string name="max_velocity">Max velocity</string>
+    <string name="maximum_flight_height">Maximum flight height</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="delete">delete</string>
 </resources>

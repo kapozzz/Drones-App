@@ -28,7 +28,6 @@ sealed class NewDroneScreenEvent {
     data class BottomSheetSetId(val id: String) : NewDroneScreenEvent()
     data class ShowImage(val image: UriImage?): NewDroneScreenEvent()
     data class DeleteUriImage(val image: UriImage): NewDroneScreenEvent()
-//    data class ScreenStateChanged(val screen: NewDroneScreenState): NewDroneScreenEvent()
     object SaveBottomSheet: NewDroneScreenEvent()
     object SaveDrone : NewDroneScreenEvent()
 }

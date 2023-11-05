@@ -1,5 +1,6 @@
 package com.example.vozdux.data.remote
 
+import android.util.Log
 import com.example.vozdux.constants.EMPTY_ID
 import com.example.vozdux.data.util.COUNTER_HELPER_NAME
 import com.example.vozdux.data.util.DRONE_HELPER_NAME
@@ -35,8 +36,6 @@ class FirebaseDatabase @Inject constructor(
         dronesHelper.database ?: throw IllegalStateException("Empty database in firebaseHelper")
     private val storage =
         dronesHelper.storage ?: throw IllegalStateException("Empty storage in firebaseHelper")
-    private val counterReference =
-        counterHelper.database ?: throw IllegalStateException("Empty database in firebaseHelper")
 
     private val scope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
@@ -46,35 +45,29 @@ class FirebaseDatabase @Inject constructor(
     val dronesStateFlow: StateFlow<List<UploadDrone>> = _dronesStateFlow
 
     init {
-        job?.cancel()
-        job = scope.launch {
-            setupFirebaseListener()
-        }
-    }
-
-    private fun setupFirebaseListener() {
-        val valueEventListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val droneList = mutableListOf<UploadDrone>()
-                for (droneSnapshot in dataSnapshot.children) {
-                    droneSnapshot.getValue(UploadDrone::class.java)?.let { uploadDrone ->
-                        droneList.add(uploadDrone)
+        CoroutineScope(Dispatchers.IO).launch {
+            val valueEventListener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val droneList = mutableListOf<UploadDrone>()
+                    for (droneSnapshot in dataSnapshot.children) {
+                        droneSnapshot.getValue(UploadDrone::class.java)?.let { uploadDrone ->
+                            droneList.add(uploadDrone)
+                        }
                     }
+                    _dronesStateFlow.value = droneList
                 }
-                _dronesStateFlow.value = droneList
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                throw Exception("invalid connection with Firebase Realtime Database")
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Vozdux", "invalid connection with Firebase Realtime Database")
+                }
             }
+            dronesReference.addValueEventListener(valueEventListener)
         }
-        dronesReference.addValueEventListener(valueEventListener)
     }
 
     suspend fun insertDrone(drone: Drone): Boolean = suspendCoroutine { continuation ->
         job?.cancel()
         job = scope.launch {
-
             val images = async {
                 drone.images.mapNotNull {
                     Image(
@@ -103,7 +96,7 @@ class FirebaseDatabase @Inject constructor(
         suspendCoroutine { continuation ->
             val path = storage.child(uploadImage.id)
             uploadImage.uri.let { uri ->
-                path.putFile(uri ?: throw IOException("Couldn't insert uri"))
+                path.putFile(uri ?: throw IOException("Uri is null"))
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             path.downloadUrl.addOnSuccessListener { uri ->

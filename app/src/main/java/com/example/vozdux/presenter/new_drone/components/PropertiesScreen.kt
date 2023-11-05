@@ -3,6 +3,7 @@ package com.example.vozdux.presenter.new_drone.components
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,10 +26,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -36,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.example.vozdux.R
 import com.example.vozdux.constants.EMPTY_STRING
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
+import com.example.vozdux.presenter.generalComponents.CustomAlertDialog
 import com.example.vozdux.presenter.new_drone.BottomSheetContentState
 import com.example.vozdux.presenter.new_drone.CurrentPropertiesPage
 import com.example.vozdux.presenter.new_drone.NewDroneScreenEvent
@@ -103,72 +109,88 @@ fun PropertiesScreen(
         val onEventLambda = { event: NewDroneScreenEvent ->
             viewModel.onEvent(event)
         }
+        val lazyListState = LazyListState()
 
-        LazyColumn(
-            modifier = Modifier.padding(padding)
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
         ) {
-            stickyHeader {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = stringResource(R.string.add) + " " + currentPageName.lowercase())
-                    IconButton(onClick = {
-                        onEventLambda(NewDroneScreenEvent.BottomSheetStateChanged(true))
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(R.string.add) + " " + currentPageName.lowercase()
-                        )
+            LazyColumn(
+                modifier = Modifier.padding(padding),
+                state = lazyListState
+            ) {
+                stickyHeader {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.background),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.add) + " " + currentPageName.lowercase())
+                        IconButton(onClick = {
+                            onEventLambda(NewDroneScreenEvent.BottomSheetStateChanged(true))
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(R.string.add) + " " + currentPageName.lowercase()
+                            )
+                        }
                     }
                 }
-            }
 
-            items(items = items, key = { currentItem -> currentItem.id })
-            { currentItem ->
-                NewDroneItem(
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                        .fillMaxWidth(),
-                    currentItem = currentItem,
-                    name = currentItem.name,
-                    content = currentItem.value,
-                    isExpanded = currentExpandedElement == currentItem.id,
-                    onExpandClick = {
-                        onEventLambda(
-                            NewDroneScreenEvent.CurrentExpandedElementChanged(
-                                currentItem.id
-                            )
-                        )
-                    },
-                    onCollapseClick = {
-                        onEventLambda(
-                            NewDroneScreenEvent.CurrentExpandedElementChanged(
-                                EMPTY_STRING
-                            )
-                        )
-                    },
-                    editItem = { item ->
-                        onEventLambda(NewDroneScreenEvent.BottomSheetSetId(currentItem.id))
-                        onEventLambda(NewDroneScreenEvent.BottomSheetStateChanged(true))
-                        onEventLambda(
-                            NewDroneScreenEvent.BottomSheetContentChanged(
-                                content = BottomSheetContentState(
-                                    name = item.name,
-                                    content = item.value,
-                                    currentId = item.id
+                items(items = items, key = { currentItem -> currentItem.id })
+                { currentItem ->
+                    NewDroneItem(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .fillMaxWidth(),
+                        currentItem = currentItem,
+                        name = currentItem.name,
+                        content = currentItem.value,
+                        isExpanded = currentExpandedElement == currentItem.id,
+                        onExpandClick = {
+                            onEventLambda(
+                                NewDroneScreenEvent.CurrentExpandedElementChanged(
+                                    currentItem.id
                                 )
                             )
-                        )
-                    })
-            }
-            item {
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                )
+                        },
+                        onCollapseClick = {
+                            onEventLambda(
+                                NewDroneScreenEvent.CurrentExpandedElementChanged(
+                                    EMPTY_STRING
+                                )
+                            )
+                        },
+                        editItem = { item ->
+                            onEventLambda(NewDroneScreenEvent.BottomSheetSetId(currentItem.id))
+                            onEventLambda(NewDroneScreenEvent.BottomSheetStateChanged(true))
+                            onEventLambda(
+                                NewDroneScreenEvent.BottomSheetContentChanged(
+                                    content = BottomSheetContentState(
+                                        name = item.name,
+                                        content = item.value,
+                                        currentId = item.id
+                                    )
+                                )
+                            )
+
+                        },
+                        currentPage = viewModel.currentPage.value ?: throw IllegalStateException(
+                            "null page state in properties screen"
+                        ),
+                        onEvent = onEventLambda
+                    )
+                }
+                item {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                    )
+                }
             }
         }
 

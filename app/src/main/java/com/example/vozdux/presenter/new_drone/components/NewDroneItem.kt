@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -18,24 +19,37 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.vozdux.R
+import com.example.vozdux.domain.model.drone.CompositeDroneElement
+import com.example.vozdux.presenter.generalComponents.CustomAlertDialog
+import com.example.vozdux.presenter.new_drone.CurrentPropertiesPage
+import com.example.vozdux.presenter.new_drone.NewDroneScreenEvent
 
 @Composable
-fun <T>NewDroneItem(
-    currentItem: T,
+fun NewDroneItem(
+    currentItem: CompositeDroneElement,
     name: String,
     content: String,
     onExpandClick: () -> Unit,
     onCollapseClick: () -> Unit,
-    editItem: (currentItem: T) -> Unit,
+    editItem: (currentItem: CompositeDroneElement) -> Unit,
     modifier: Modifier = Modifier,
-    isExpanded: Boolean = false
+    isExpanded: Boolean = false,
+    currentPage: CurrentPropertiesPage,
+    onEvent: (event: NewDroneScreenEvent) -> Unit
 ) {
+
+    val alertDialogState = remember {
+        mutableStateOf(false)
+    }
+
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -72,6 +86,20 @@ fun <T>NewDroneItem(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary
                             ),
+                            onClick = { alertDialogState.value = true }) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(20.dp),
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.delete),
+                                tint = MaterialTheme.colorScheme.onBackground,
+                            )
+                        }
+
+                        if (isExpanded) Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            ),
                             onClick = {
                                 editItem(currentItem)
                             }) {
@@ -102,6 +130,26 @@ fun <T>NewDroneItem(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+        }
+
+        if (alertDialogState.value) {
+            CustomAlertDialog(
+                label = stringResource(id = R.string.are_you_sure),
+                positive = { if (currentPage is CurrentPropertiesPage.LongDescription) {
+                    onEvent(
+                        NewDroneScreenEvent.DescriptionHeadlineDelete(
+                            currentItem
+                        )
+                    )
+                } else {
+                    onEvent(
+                        NewDroneScreenEvent.PropertyDelete(
+                            currentItem
+                        )
+                    )
+                } },
+                negative = {alertDialogState.value = false}
+            )
         }
     }
 }

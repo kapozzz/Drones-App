@@ -96,11 +96,11 @@ class NewDroneViewModel @AssistedInject constructor(
             }
 
             is NewDroneScreenEvent.PropertyDelete -> {
-                TODO()
+                deletePropertyItem(event.propertyToDelete)
             }
 
             is NewDroneScreenEvent.DescriptionHeadlineDelete -> {
-                TODO()
+                deleteLongDescriptionItem(event.descriptionHeadlineToDelete)
             }
 
             is NewDroneScreenEvent.BottomSheetStateChanged -> {
@@ -144,6 +144,22 @@ class NewDroneViewModel @AssistedInject constructor(
                 deleteUriImage(event.image)
             }
         }
+    }
+
+    private fun deleteLongDescriptionItem(item: CompositeDroneElement) {
+        _currentDrone.value = _currentDrone.value.copy(
+            longDescription = _currentDrone.value.longDescription.mapNotNull {
+                if (it.id == item.id) null else it
+            }.toMutableList()
+        )
+    }
+
+    private fun deletePropertyItem(item: CompositeDroneElement) {
+        _currentDrone.value = _currentDrone.value.copy(
+            otherProperties = _currentDrone.value.otherProperties.mapNotNull {
+                if (it.id == item.id) null else it
+            }.toMutableList()
+        )
     }
 
     private fun deleteUriImage(image: UriImage) {
