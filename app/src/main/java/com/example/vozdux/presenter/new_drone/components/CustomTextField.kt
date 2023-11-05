@@ -1,8 +1,6 @@
 package com.example.vozdux.presenter.new_drone.components
 
-import android.text.BoringLayout
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.vozdux.R
-import com.example.vozdux.constants.EMPTY_STRING
 
 @Composable
 fun CustomTextField(

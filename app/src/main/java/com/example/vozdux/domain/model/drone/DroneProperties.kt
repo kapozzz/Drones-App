@@ -3,20 +3,12 @@ package com.example.vozdux.domain.model.drone
 import java.util.UUID
 
 data class DroneProperties(
-    val battery: Int,
-    val flightRange: Int,
-    val maxVelocity: Int,
-    val flightTime: Int,
-    val maximumFlightHeight: Int
+    val battery: Int = 0,
+    val flightRange: Int = 0,
+    val maxVelocity: Int = 0,
+    val flightTime: Int = 0,
+    val maximumFlightHeight: Int = 0
 ) {
-
-    constructor(): this(
-        battery = 0,
-        flightRange = 0,
-        maxVelocity = 0,
-        flightTime = 0,
-        maximumFlightHeight = 0
-    )
 
     fun toList(): List<PropertyElement> {
 

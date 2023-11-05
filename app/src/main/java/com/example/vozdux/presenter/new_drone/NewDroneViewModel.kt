@@ -11,7 +11,6 @@ import com.example.vozdux.constants.emptyDrone
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
 import com.example.vozdux.domain.model.drone.Drone
 import com.example.vozdux.domain.model.drone.UriImage
-import com.example.vozdux.domain.model.drone.toProperties
 import com.example.vozdux.domain.usecase.UseCases
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -57,8 +56,9 @@ class NewDroneViewModel @AssistedInject constructor(
     private val _currentExpandedElement: MutableState<String> = mutableStateOf(EMPTY_STRING)
     val currentExpandedElement: State<String> = _currentExpandedElement
 
-    private val _currentPage: MutableState<CurrentPage> = mutableStateOf(CurrentPage.Description)
-    val currentPage: State<CurrentPage> = _currentPage
+    private val _currentPage: MutableState<CurrentPropertiesPage?> =
+        mutableStateOf(CurrentPropertiesPage.LongDescription)
+    val currentPage: State<CurrentPropertiesPage?> = _currentPage
 
     private val _currentImageToShow: MutableState<UriImage?> = mutableStateOf(null)
     val currentImageToShow: State<UriImage?> = _currentImageToShow
@@ -132,11 +132,8 @@ class NewDroneViewModel @AssistedInject constructor(
             }
 
             NewDroneScreenEvent.SaveBottomSheet -> {
-                when (_currentPage.value) {
-                    CurrentPage.Description -> newDescriptionHeadline()
-                    CurrentPage.MainProperties -> mainPropertiesChanged()
-                    CurrentPage.Properties -> newProperty()
-                }
+                if (_currentPage.value is CurrentPropertiesPage.LongDescription) newDescriptionHeadline()
+                else newProperty()
             }
 
             is NewDroneScreenEvent.ShowImage -> {
@@ -151,7 +148,7 @@ class NewDroneViewModel @AssistedInject constructor(
 
     private fun deleteUriImage(image: UriImage) {
         _currentDrone.value = _currentDrone.value.copy(
-            images =  _currentDrone.value.images.mapNotNull {
+            images = _currentDrone.value.images.mapNotNull {
                 if (it == image) null else it
             }
         )
@@ -159,21 +156,6 @@ class NewDroneViewModel @AssistedInject constructor(
 
     private fun changeImageToShow(image: UriImage?) {
         _currentImageToShow.value = image
-    }
-
-    private fun mainPropertiesChanged() {
-        _currentDrone.value = _currentDrone.value.copy(
-            mainProperties = _currentDrone.value.mainProperties.toList().map {
-
-                if (it.name == _bottomSheetState.value.bottomSheetContentState.name) {
-                    it.copy(
-                        value = _bottomSheetState.value.bottomSheetContentState.content.toInt()
-                    )
-                } else it
-            }.toProperties()
-        )
-        _bottomSheetState.value = _bottomSheetState.value.copy(bottomSheetIsVisible = false)
-        clearBottomSheetContent()
     }
 
     private fun fieldChanged(newDroneState: Drone) {
@@ -272,12 +254,13 @@ class NewDroneViewModel @AssistedInject constructor(
             )
     }
 
-
     private fun bottomSheetStateChanged(state: Boolean) {
         _bottomSheetState.value = _bottomSheetState.value.copy(
             bottomSheetIsVisible = state
         )
-        if (!state) { clearBottomSheetContent() }
+        if (!state) {
+            clearBottomSheetContent()
+        }
     }
 
     private fun currentExpandedElementChanged(name: String) {
@@ -298,9 +281,18 @@ class NewDroneViewModel @AssistedInject constructor(
         )
     }
 
-    private fun currentPageChanged(page: CurrentPage) {
+    private fun currentPageChanged(page: CurrentPropertiesPage?) {
         _currentPage.value = page
         _currentExpandedElement.value = EMPTY_STRING
+        when(page) {
+            null -> {
+                _screenState.value = NewDroneScreenState.Screen
+            }
+
+            else -> {
+                _screenState.value = NewDroneScreenState.PropertiesScreen
+            }
+        }
     }
 
     private fun bottomSheetContentChanged(contentState: BottomSheetContentState) {

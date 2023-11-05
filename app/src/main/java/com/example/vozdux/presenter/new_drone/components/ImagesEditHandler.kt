@@ -37,17 +37,17 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vozdux.R
 import com.example.vozdux.domain.model.drone.UriImage
+import com.example.vozdux.presenter.new_drone.NewDroneScreenEvent
 
 @Composable
 fun ImagesEditHandler(
     images: List<UriImage>,
-    onItemClick: (image: UriImage) -> Unit,
+    onEvent: (event: NewDroneScreenEvent) -> Unit,
     modifier: Modifier = Modifier,
-    onDeleteClick: ((image: UriImage) -> Unit)? = null,
 ) {
 
     val imageToDelete = remember {
-        mutableStateOf(images.first())
+        mutableStateOf(if (images.isNotEmpty()) images.first() else null)
     }
 
     val showImage = remember {
@@ -60,7 +60,6 @@ fun ImagesEditHandler(
 
     Column(
         modifier = modifier
-            .fillMaxSize()
             .shadow(2.dp, shape = RoundedCornerShape(4.dp))
             .background(
                 color = MaterialTheme.colorScheme.secondary,
@@ -84,12 +83,12 @@ fun ImagesEditHandler(
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable { onItemClick(currentImage) },
+                            .clickable { onEvent(NewDroneScreenEvent.ShowImage(currentImage)) },
                         contentScale = ContentScale.FillBounds,
                         alignment = Alignment.Center
                     )
 
-                    if (onDeleteClick != null) IconButton(
+                    IconButton(
                         modifier = Modifier
                             .padding(8.dp)
                             .clip(CircleShape)
@@ -122,8 +121,7 @@ fun ImagesEditHandler(
                 textAlign = TextAlign.Left
             )
         },
-        buttons =
-        {
+        buttons = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -136,8 +134,9 @@ fun ImagesEditHandler(
                     )
                 }
                 TextButton(onClick = {
-                    // TODO ПРОВЕРИТЬ PAGE
-                    onDeleteClick?.invoke(imageToDelete.value)
+                    imageToDelete.value?.let {
+                        onEvent(NewDroneScreenEvent.DeleteUriImage(imageToDelete.value!!))
+                    }
                     alertDialogState.value = false
                 }) {
                     Text(
@@ -147,9 +146,6 @@ fun ImagesEditHandler(
                 }
             }
         },
-        onDismissRequest =
-        {
-            alertDialogState.value = false
-        }
+        onDismissRequest = { alertDialogState.value = false }
     )
 }

@@ -24,10 +24,11 @@ sealed class NewDroneScreenEvent {
     data class BottomSheetStateChanged(val isVisible: Boolean) : NewDroneScreenEvent()
     data class CurrentExpandedElementChanged(val name: String) : NewDroneScreenEvent()
     data class UrisChanged(val newUris: List<UriImage>) : NewDroneScreenEvent()
-    data class CurrentPageChanged(val page: CurrentPage) : NewDroneScreenEvent()
+    data class CurrentPageChanged(val page: CurrentPropertiesPage?) : NewDroneScreenEvent()
     data class BottomSheetSetId(val id: String) : NewDroneScreenEvent()
     data class ShowImage(val image: UriImage?): NewDroneScreenEvent()
     data class DeleteUriImage(val image: UriImage): NewDroneScreenEvent()
+//    data class ScreenStateChanged(val screen: NewDroneScreenState): NewDroneScreenEvent()
     object SaveBottomSheet: NewDroneScreenEvent()
     object SaveDrone : NewDroneScreenEvent()
 }

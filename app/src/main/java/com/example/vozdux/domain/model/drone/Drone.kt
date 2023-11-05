@@ -13,12 +13,16 @@ data class Drone(
     val shortDescription: String,
     val longDescription: MutableList<CompositeDroneElement>,
     val otherProperties: MutableList<CompositeDroneElement>,
-    val mainProperties: DroneProperties,
     val creationDate: String,
     val country: String,
     val cost: Cost,
     val images: List<UriImage>, // Id, source
-    @PrimaryKey val id: String = EMPTY_ID,
+    val battery: Int,
+    val flightRange: Int,
+    val maxVelocity: Int,
+    val flightTime: Int,
+    val maximumFlightHeight: Int,
+    @PrimaryKey val id: String = EMPTY_ID
 )
 
 @Entity(tableName = DRONES_LOCAL_DATABASE_NAME)
@@ -27,11 +31,15 @@ data class UploadDrone(
     val shortDescription: String,
     val longDescription: MutableList<CompositeDroneElement>,
     val otherProperties: MutableList<CompositeDroneElement>,
-    val mainProperties: DroneProperties,
     val creationDate: String,
     val country: String,
     val cost: Cost,
     val images: List<Image>, // Id, source
+    val battery: Int,
+    val flightRange: Int,
+    val maxVelocity: Int,
+    val flightTime: Int,
+    val maximumFlightHeight: Int,
     @PrimaryKey val id: String = EMPTY_ID
 ) {
     constructor() : this(
@@ -42,16 +50,14 @@ data class UploadDrone(
         creationDate = EMPTY_STRING,
         country = EMPTY_STRING,
         images = mutableListOf(),
+        battery = 0,
+        flightRange = 0,
+        maxVelocity = 0,
+        flightTime = 0,
+        maximumFlightHeight = 0,
         cost = Cost(
             value = EMPTY_STRING,
             currency = USD_CODE
-        ),
-        mainProperties = DroneProperties(
-            battery = 0,
-            flightRange = 0,
-            flightTime = 0,
-            maximumFlightHeight = 0,
-            maxVelocity = 0
         )
     )
 
@@ -62,7 +68,6 @@ data class UploadDrone(
             shortDescription = uploadDrone.shortDescription,
             longDescription = uploadDrone.longDescription,
             otherProperties = uploadDrone.otherProperties,
-            mainProperties = uploadDrone.mainProperties,
             creationDate = uploadDrone.creationDate,
             country = uploadDrone.country,
             cost = uploadDrone.cost,
@@ -73,6 +78,11 @@ data class UploadDrone(
                     uri = Uri.parse(it.uri)
                 )
             },
+            battery = uploadDrone.battery,
+            flightRange = uploadDrone.flightRange,
+            maxVelocity = uploadDrone.maxVelocity,
+            flightTime = uploadDrone.flightTime,
+            maximumFlightHeight = uploadDrone.maximumFlightHeight,
             id = uploadDrone.id
         )
 
@@ -81,7 +91,6 @@ data class UploadDrone(
             shortDescription = drone.shortDescription,
             longDescription = drone.longDescription,
             otherProperties = drone.otherProperties,
-            mainProperties = drone.mainProperties,
             creationDate = drone.creationDate,
             country = drone.country,
             cost = drone.cost,
@@ -92,6 +101,11 @@ data class UploadDrone(
                     uri = it.uri.toString()
                 )
             },
+            battery = drone.battery,
+            flightRange = drone.flightRange,
+            maxVelocity = drone.maxVelocity,
+            flightTime = drone.flightTime,
+            maximumFlightHeight = drone.maximumFlightHeight,
             id = drone.id
         )
     }

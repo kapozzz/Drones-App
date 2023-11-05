@@ -1,6 +1,5 @@
 package com.example.vozdux.presenter.new_drone.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,9 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.vozdux.R
-import com.example.vozdux.domain.model.drone.CompositeDroneElement
-import com.example.vozdux.domain.model.drone.PropertyElement
-import java.lang.IllegalStateException
 
 @Composable
 fun <T>NewDroneItem(

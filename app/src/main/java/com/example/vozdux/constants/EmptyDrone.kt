@@ -17,12 +17,10 @@ val emptyDrone = Drone(
         value = EMPTY_STRING,
         currency = USD_CODE
     ),
-    mainProperties = DroneProperties(
-        battery = 0,
-        flightRange = 0,
-        flightTime = 0,
-        maximumFlightHeight = 0,
-        maxVelocity = 0
-    )
+    battery = 0,
+    maxVelocity = 0,
+    flightRange = 0,
+    flightTime = 0,
+    maximumFlightHeight = 0
 )
 
