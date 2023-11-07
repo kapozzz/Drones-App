@@ -1,6 +1,7 @@
 package com.example.vozdux.presenter.new_drone.components
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,8 +16,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -24,9 +30,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.vozdux.R
+import com.example.vozdux.constants.APP_NAME
 import com.example.vozdux.presenter.generalComponents.ImageScreen
 import com.example.vozdux.presenter.new_drone.NewDroneScreenEvent
 import com.example.vozdux.presenter.new_drone.NewDroneViewModel
+import com.example.vozdux.presenter.new_drone.util.UiEvent
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -37,6 +47,10 @@ fun NewDroneScreen(
     val currentDrone = viewModel.currentDrone.value
     val currentImageToShow = viewModel.currentImageToShow.value
     val onEventLambda = { event: NewDroneScreenEvent -> viewModel.onEvent(event) }
+    val notifyHostState = remember {
+        SnackbarHostState()
+    }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier
@@ -60,8 +74,23 @@ fun NewDroneScreen(
             ConstructorTopBar {
                 navController.popBackStack()
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = notifyHostState) }
     ) { padding ->
+
+        val emptyFieldsString = stringResource(id = R.string.there_are_empty_fields)
+        LaunchedEffect(key1 = true) {
+            viewModel.eventFlow.collectLatest { event ->
+                when(event) {
+                    is UiEvent.EmptyFields -> {
+                        scope.launch {
+                            notifyHostState.showSnackbar(emptyFieldsString)
+                        }
+                    }
+                }
+            }
+        }
+
         Surface(
             modifier = Modifier
                 .fillMaxSize()

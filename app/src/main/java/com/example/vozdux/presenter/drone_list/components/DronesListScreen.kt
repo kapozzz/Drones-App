@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -17,13 +16,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.vozdux.R
+import com.example.vozdux.presenter.drone_list.DroneListEvent
 import com.example.vozdux.presenter.drone_list.DronesListViewModel
 import com.example.vozdux.presenter.util.Screen
 
@@ -35,13 +34,17 @@ fun DronesListScreen(
     navController: NavController
 ) {
 
-    val drones = viewModel.state.value.drones
+    val drones = viewModel.drones.value
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val lazyListState = rememberLazyListState()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { ListScreenTopBar(onSearchIconClicked = {}, scrollBehavior) },
+        topBar = {
+            ListScreenTopBar(onSearchIconClicked = {
+                viewModel.onEvent(DroneListEvent.OnSearch)
+            }, scrollBehavior)
+        },
         floatingActionButton = {
             Button(onClick = {
                 navController.navigate(Screen.NewDroneScreen.route)
@@ -70,9 +73,7 @@ fun DronesListScreen(
                 DroneItem(
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
                     element = element,
-                    onClick = {
-                        navController.navigate(Screen.NewDroneScreen.route + "?drone=${element.id}")
-                    })
+                    onClick = { navController.navigate(Screen.NewDroneScreen.route + "?drone=${element.id}") })
             }
         }
     }

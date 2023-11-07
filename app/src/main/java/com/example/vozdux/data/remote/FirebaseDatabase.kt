@@ -28,8 +28,7 @@ import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class FirebaseDatabase @Inject constructor(
-    @Named(DRONE_HELPER_NAME) private val dronesHelper: FirebaseHelper,
-    @Named(COUNTER_HELPER_NAME) private val counterHelper: FirebaseHelper,
+    @Named(DRONE_HELPER_NAME) private val dronesHelper: FirebaseHelper
 ) {
 
     private val dronesReference =

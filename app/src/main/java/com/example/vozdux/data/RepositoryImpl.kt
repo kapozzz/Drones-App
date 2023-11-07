@@ -5,9 +5,9 @@ import com.example.vozdux.data.remote.FirebaseDatabase
 import com.example.vozdux.domain.Repository
 import com.example.vozdux.domain.model.drone.Drone
 import com.example.vozdux.domain.model.drone.UploadDrone
+import com.example.vozdux.domain.model.other.PropertiesRanges
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -54,5 +54,16 @@ class RepositoryImpl @Inject constructor(
 
     override suspend fun insertDrone(drone: Drone): Boolean {
         return remoteDatabase.insertDrone(drone)
+    }
+
+    override suspend fun getRanges(): PropertiesRanges {
+        val drones = localDatabase.dao().getAllDrones().first()
+        return PropertiesRanges(
+            battery = drones.minBy { it.battery }.battery.toFloat()..drones.maxBy { it.battery.toFloat() }.battery.toFloat(),
+            flightRange = drones.minBy { it.flightRange }.flightRange.toFloat()..drones.maxBy { it.flightRange.toFloat() }.flightRange.toFloat(),
+            maxVelocity = drones.minBy { it.maxVelocity }.maxVelocity.toFloat()..drones.maxBy { it.maxVelocity.toFloat() }.maxVelocity.toFloat(),
+            flightTime = drones.minBy { it.flightTime }.flightTime.toFloat()..drones.maxBy { it.flightTime.toFloat() }.flightTime.toFloat(),
+            maximumFlightHeight = drones.minBy { it.maximumFlightHeight }.maximumFlightHeight.toFloat()..drones.maxBy { it.maximumFlightHeight.toFloat() }.maximumFlightHeight.toFloat(),
+        )
     }
 }

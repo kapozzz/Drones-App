@@ -17,16 +17,6 @@ fun NewDrone(
     viewModel: NewDroneViewModel,
     navController: NavController
 ) {
-    StateHandler(state = viewModel.screenState.value, viewModel, navController)
-}
-
-@Composable
-fun StateHandler(
-    state: NewDroneScreenState,
-    viewModel: NewDroneViewModel,
-    navController: NavController
-) {
-
     val alertDialogState = remember {
         mutableStateOf(false)
     }
@@ -35,7 +25,7 @@ fun StateHandler(
         alertDialogState.value = true
     }
 
-    when (state) {
+    when (viewModel.screenState.value) {
 
         NewDroneScreenState.Loading -> {
             LoadingScreen()

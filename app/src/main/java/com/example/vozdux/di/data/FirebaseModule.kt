@@ -25,15 +25,5 @@ class FirebaseModule {
             storage = FirebaseStorage.getInstance().getReference(DRONES_IMAGES_STORAGE_CHILD_NAME)
         )
     }
-
-    @Named(COUNTER_HELPER_NAME)
-    @Provides
-    fun provideCounterHelper(): FirebaseHelper {
-        return FirebaseHelper(
-            database = FirebaseDatabase.getInstance().getReference(
-                DATABASE_COUNTER_NAME
-            )
-        )
-    }
 }
 

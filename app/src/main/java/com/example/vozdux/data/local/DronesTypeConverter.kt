@@ -27,27 +27,10 @@ class DronesTypeConverter {
     }
 
     @TypeConverter
-    fun fromMainPropertiesToJson(mainProperties: DroneProperties): String =
-        Gson().toJson(mainProperties)
-
-    @TypeConverter
-    fun fromJsonToMainProperties(jsonMainProperties: String): DroneProperties =
-        Gson().fromJson(jsonMainProperties, DroneProperties::class.java)
-
-    @TypeConverter
     fun fromCostToJson(cost: Cost): String = Gson().toJson(cost)
 
     @TypeConverter
     fun fromJsonToCost(jsonCost: String): Cost = Gson().fromJson(jsonCost, Cost::class.java)
-
-    @TypeConverter
-    fun fromUriImageToJson(uriImages: List<UriImage>): String = Gson().toJson(uriImages)
-
-    @TypeConverter
-    fun fromJsonToUriImages(jsonUriImages: String): List<UriImage> {
-        val type = object : TypeToken<List<UriImage>>() {}.type
-        return Gson().fromJson(jsonUriImages, type)
-    }
 
     @TypeConverter
     fun fromImagesToJson(images: List<Image>): String = Gson().toJson(images)

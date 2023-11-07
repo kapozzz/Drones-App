@@ -37,4 +37,10 @@
     <string name="maximum_flight_height">Maximum flight height</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="delete">delete</string>
+    <string name="there_are_empty_fields">There are empty fields</string>
+    <string name="successfully_saved">Successfully saved</string>
+    <string name="search_clear_query">Search/Clear query</string>
+    <string name="close_filter">Close filter</string>
+    <string name="show_filter">Show filter</string>
+    <string name="close">Close</string>
 </resources>

@@ -6,18 +6,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.vozdux.R
 import com.example.vozdux.constants.EMPTY_STRING
 import com.example.vozdux.constants.emptyDrone
 import com.example.vozdux.domain.model.drone.CompositeDroneElement
 import com.example.vozdux.domain.model.drone.Drone
 import com.example.vozdux.domain.model.drone.UriImage
 import com.example.vozdux.domain.usecase.UseCases
+import com.example.vozdux.presenter.new_drone.util.UiEvent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class NewDroneViewModel @AssistedInject constructor(
@@ -62,6 +66,9 @@ class NewDroneViewModel @AssistedInject constructor(
 
     private val _currentImageToShow: MutableState<UriImage?> = mutableStateOf(null)
     val currentImageToShow: State<UriImage?> = _currentImageToShow
+
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     private var job: Job? = null
 
@@ -285,9 +292,12 @@ class NewDroneViewModel @AssistedInject constructor(
 
     private fun saveDrone() {
         viewModelScope.launch {
-            _screenState.value = NewDroneScreenState.Loading
-            useCases.insertDrone(_currentDrone.value)
-            navController.popBackStack()
+            if (verifyFields()) {
+                _screenState.value = NewDroneScreenState.Loading
+                useCases.insertDrone(_currentDrone.value)
+                navController.popBackStack()
+            } else _eventFlow.emit(UiEvent.EmptyFields)
+
         }
     }
 
@@ -300,7 +310,7 @@ class NewDroneViewModel @AssistedInject constructor(
     private fun currentPageChanged(page: CurrentPropertiesPage?) {
         _currentPage.value = page
         _currentExpandedElement.value = EMPTY_STRING
-        when(page) {
+        when (page) {
             null -> {
                 _screenState.value = NewDroneScreenState.Screen
             }
@@ -315,5 +325,18 @@ class NewDroneViewModel @AssistedInject constructor(
         _bottomSheetState.value = _bottomSheetState.value.copy(
             bottomSheetContentState = contentState
         )
+    }
+
+    private fun verifyFields(): Boolean {
+        return with(_currentDrone.value) {
+            return@with when {
+                name == EMPTY_STRING -> false
+                shortDescription == EMPTY_STRING -> false
+                creationDate == EMPTY_STRING -> false
+                country == EMPTY_STRING -> false
+                cost.value == EMPTY_STRING -> false
+                else -> true
+            }
+        }
     }
 }

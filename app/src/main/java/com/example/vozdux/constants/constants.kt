@@ -11,3 +11,5 @@ const val DRONES_IMAGES_STORAGE_CHILD_NAME = "drones_images_remote"
 
 const val DATASTORE_NAME = "datastore_settings"
 const val DATASTORE_COUNTER_KEY = "ls1PSP@$20OS1Aa#SPk2-k0220()-098k20@)0@k#"
+
+const val APP_NAME = "Vozdux"
