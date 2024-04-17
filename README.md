@@ -1,5 +1,5 @@
 <div id="header" align="center">
-  <img src="app/images/editor.png" align="start"
+  <img src="app/images/main.png" align="start"
 width="200"
     hspace="10" vspace="10">
   <img src="app/images/editor.png" align="start"
