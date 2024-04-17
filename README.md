@@ -1,6 +1,6 @@
 <div id="header" align="center">
   <img src="app/images/main.png" align="start"
-width="200"
+width="196"
     hspace="10" vspace="10">
   <img src="app/images/editor.png" align="start"
 width="200"
